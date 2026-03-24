@@ -48,8 +48,20 @@ scan-go/
 ├── backend/
 └── frontend/
 
+## 📐 Alcance da proba de concepto
+
+Implementarase o fluxo completo de compra:
+
+- Autenticación de usuarios (rexistro e login)
+- Escaneo de produtos mediante código QR
+- Consulta de información do produto
+- Xestión do carriño virtual (engadir e eliminar produtos)
+- Visualización do carriño co importe total
+
+**Fóra de alcance:** pasarela de pago real
+
 
 ## 📑 Documentación
 
 A documentación completa atópase en:  
-`docs/proposta_proxecto.md`
+`docs/docs/ScanGo-AlbaRodríguezFernández.pdf`
