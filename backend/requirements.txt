@@ -1,0 +1,8 @@
+# Base de datos 
+sqlalchemy
+
+# Framework web para crear APIs REST
+fastapi
+
+# Servidor para executar a aplicación FastAPI
+uvicorn
