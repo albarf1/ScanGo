@@ -1,0 +1,16 @@
+# IDE & System
+.vscode/
+*.log
+.DS_Store
+
+# Flutter & Dart
+.dart_tool/
+build/
+.pub-cache/
+.packages
+
+# Python & FastAPI
+__pycache__/
+*.pyc
+.env
+scango.db
