@@ -1,51 +1,75 @@
-# ScanGo Backend
+# ScanGo Backend - API REST
 
-## Descripción
+## 📋 Descripción
 
-Este proxecto corresponde ao backend da aplicación ScanGo, desenvolvido con **FastAPI**. O seu obxectivo é ofrecer unha **API REST** que permita xestionar produtos e carritos da compra mediante códigos QR.
+Este documento contén a lóxica de servidor do sistema **ScanGo**. O backend actúa como o núcleo central que xestiona a persistencia de datos, a lóxica de negocio e a comunicación coa aplicación móbil a través dunha API REST.
 
-O backend é responsable de:
-- Xestionar o catálogo de productos
-- Buscar productos por código QR
-- Crear e xestionar carritos de compra
-- Calcular totais de compra
-- Almacenar datos en base de datos
+## 2️⃣ Tecnoloxías empregadas
 
-## 🚀 Instalación
+- **Framework**: FastAPI (Python) para unha xestión rápida e eficiente das peticións
+- **ORM**: SQLAlchemy para a interacción coa base de datos
+- **Base de datos**: 
+  - Fase actual: SQLite (ficheiro local `scango.db`)
+  - Produción: PostgreSQL 15 (futuro)
+- **Documentación**: Swagger UI (dispoñible en `/docs`)
+
+## 3️⃣ Funcionalidades implementadas
+
+De acordo coa especificación de alcance, o servidor ofrece soporte para:
+
+- **Xestión de produtos (CU03/CU04)**: Endpoints para listar o catálogo e buscar artigos mediante o código QR
+- **Integridade referencial**: Estrutura de táboas normalizada para produtos, usuarios e carriños
+- **Datos de proba**: Script automatizado para a carga inicial de información técnica
+
+## 4️⃣ Estrutura do proxecto
+
+```
+backend/
+├── app/
+│   ├── main.py              # Punto de entrada e configuración
+│   ├── models.py            # Modelos da BD (Usuario, Producto, Carrito)
+│   ├── database.py          # Configuración da conexión á BD
+│   ├── routers/
+│   │   ├── produtos.py      # Endpoints de productos
+│   │   ├── carrito.py       # Endpoints do carrito
+│   │   └── usuarios.py      # Endpoints de usuarios
+│   └── __init__.py
+├── datosProba.py            # Script para cargar datos de proba
+├── requirements.txt         # Dependencias do proxecto
+└── scango.db               # Base de datos SQLite (creada automáticamente)
+```
+
+## 5️⃣ Instalación e Execución
 
 ### Requisitos
-- Python 3.9 ou superior  
-- pip  
+- Python 3.9 ou superior
+- pip
 
 ### Pasos a seguir
 
-1. **Instalar as dependencias:**
+1. **Instalar dependencias:**
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-2. **Cargar datos de proba (opcional):**
+2. **Cargar datos de proba:**
 ```bash
-python datosProba.py
+python3 datosProba.py
 ```
-Este script crea:
-- 2 usuarios de proba 
-- 8 productos de proba con códigos QR
-- 1 carrito con 2 produtos de exemplo
 
 3. **Iniciar o servidor:**
 ```bash
-python -m uvicorn app.main:app --reload
+python3 -m uvicorn app.main:app --reload --port 8001
 ```
 
-Unha vez iniciado, o servidor estará dispoñible en: **http://localhost:8000**
+Unha vez iniciado, o servidor estará dispoñible en: **http://localhost:8001**
 
-## Endpoints
+## 📡 Endpoints Dispoñibles
 
-### Produtos
+### Productos
 
-#### **GET** `/produtos/`
+#### GET `/produtos/`
 Devolve todos os productos dispoñibles no catálogo.
 
 **Response (200 OK):**
@@ -55,20 +79,18 @@ Devolve todos os productos dispoñibles no catálogo.
     "id": 1,
     "nome": "Leite enteiro 1L",
     "prezo": 1.29,
-    "stock": 48,
-    "categoria": "Lácteos",
-    "codigo_qr": "QR-00423",
-    "descripcion": "Leite integral pasteurizado"
+    "stock": 50,
+    "codigo_qr": "PROD001"
   }
 ]
 ```
 
-#### **GET** `/produtos/escanear/{codigo_qr}`
-Permite obter a información dun producto a partir do seu código QR. Úsase cando o usuario escanea un producto.
+#### GET `/produtos/escanear/{codigo_qr}`
+Busca un producto polo seu código QR. Úsase cando o usuario escanea un producto.
 
 **Exemplo:**
 ```
-GET /produtos/escanear/QR-00423
+GET /produtos/escanear/PROD001
 ```
 
 **Response (200 OK):**
@@ -77,42 +99,31 @@ GET /produtos/escanear/QR-00423
   "id": 1,
   "nome": "Leite enteiro 1L",
   "prezo": 1.29,
-  "stock": 48,
-  "categoria": "Lácteos",
-  "codigo_qr": "QR-00423",
-  "descripcion": "Leite integral pasteurizado"
+  "stock": 50,
+  "codigo_qr": "PROD001"
 }
 ```
 
 **Response (404 Not Found):**
 ```json
 {
-  "detail": "Produto non atopado"
+  "detail": "Producto non atopado"
 }
 ```
 
-#### **GET** `/produtos/id/{produto_id}`
+#### GET `/produtos/id/{producto_id}`
 Devolve os datos dun producto concreto a través do seu ID.
-
-**Exemplo:**
-```
-GET /produtos/id/1
-```
-
-**Response (200 OK):** (igual ao anterior)
-
----
 
 ### Carrito
 
-#### **POST** `/carrito/engadir`
-Permite engadir un producto ao carrito dun usuario.
+#### POST `/carrito/engadir`
+Engade un producto ao carrito dun usuario.
 
 **Request:**
 ```json
 {
   "usuario_id": 1,
-  "codigo_qr": "QR-00423"
+  "codigo_qr": "PROD001"
 }
 ```
 
@@ -124,45 +135,46 @@ Permite engadir un producto ao carrito dun usuario.
   "lineas": [
     {
       "id": 1,
-      "codigo_qr": "QR-00423",
-      "nome_produto": "Leite enteiro 1L",
-      "prezo_unitario": 1.29,
+      "producto_id": 1,
       "cantidad": 1,
-      "subtotal": 1.29
+      "prezo_unitario": 1.29
     }
   ],
   "total": 1.29
 }
 ```
 
-#### **GET** `/carrito/ver/{usuario_id}`
-Mostra o carrito activo do usuario, incluíndo os productos e o total.
-
-**Exemplo:**
-```
-GET /carrito/ver/1
-```
-
-**Response (200 OK):** (igual ao anterior)
-
-#### **DELETE** `/carrito/eliminar/{usuario_id}/{codigo_qr}`
-Elimina un producto do carrito do usuario.
-
-**Exemplo:**
-```
-DELETE /carrito/eliminar/1/QR-00423
-```
+#### GET `/carrito/ver/{usuario_id}`
+Mostra o carrito activo do usuario.
 
 **Response (200 OK):**
 ```json
 {
-  "mensaje": "Producto eliminado do carrito"
+  "id": 1,
+  "usuario_id": 1,
+  "lineas": [...],
+  "total": 4.57
 }
 ```
 
----
+#### DELETE `/carrito/eliminar/{usuario_id}/{codigo_qr}`
+Elimina un producto do carrito do usuario.
 
-## Base de Datos
+### Usuarios
+
+#### GET `/usuarios/{usuario_id}`
+Obtén os datos dun usuario.
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "nome": "Alba Rodríguez",
+  "email": "alba@scango.com"
+}
+```
+
+## 🗄️ Base de Datos
 
 Empregase **SQLite** cun ficheiro local chamado `scango.db`.
 
@@ -175,69 +187,46 @@ Empregase **SQLite** cun ficheiro local chamado `scango.db`.
 | **carritos** | Xestiona os carritos de compra |
 | **lineas_carrito** | Garda os productos dentro de cada carrito |
 
----
-
-## 📁 Estrutura do Proxecto
-
-```
-backend/
-├── seed.py                 # Script con datos de proba
-├── requirements.txt        # Dependencias do proxecto
-├── app/
-│   ├── main.py             # Configuración principal de FastAPI
-│   ├── models.py           # Modelos da base de datos 
-│   ├── database.py         # Configuración da base de datos
-│   └── routers/
-│       ├── __init__.py
-│       ├── produtos.py     # Endpoints de productos
-│       └── carrito.py      # Endpoints do carrito
-└── scango.db               # Base de datos SQLite 
-```
-
----
-
-## 🔧 Configuración
-
-O servidor está configurado por defecto en:
-- **Host:** localhost
-- **Porto:** 8000
-- **Recarga automática:** Activada (--reload)
-
-Para cambiar a configuración, modifica `app/main.py`.
-
----
-
-## Documentación Automática
+## 📚 Documentación Automática
 
 FastAPI xera documentación automaticamente cando o servidor está en funcionamento:
 
-- **Swagger UI:** http://localhost:8000/docs
-- **ReDoc:** http://localhost:8000/redoc
+- **Swagger UI:** http://localhost:8001/docs
+- **ReDoc:** http://localhost:8001/redoc
 
+Podes usar estas ferramentas para probar os endpoints de forma interactiva.
 
----
-
-## Exemplo de Uso
+## 🧪 Exemplo de Uso (cURL)
 
 ### Listar productos
 ```bash
-curl -X GET "http://localhost:8000/produtos/"
+curl -X GET "http://localhost:8001/produtos/"
 ```
 
 ### Buscar por QR
 ```bash
-curl -X GET "http://localhost:8000/produtos/escanear/QR-00423"
+curl -X GET "http://localhost:8001/produtos/escanear/PROD001"
 ```
 
 ### Engadir ao carrito
 ```bash
-curl -X POST "http://localhost:8000/carrito/engadir" \
+curl -X POST "http://localhost:8001/carrito/engadir" \
   -H "Content-Type: application/json" \
-  -d '{"usuario_id": 1, "codigo_qr": "QR-00423"}'
+  -d '{"usuario_id": 1, "codigo_qr": "PROD001"}'
 ```
 
 ### Ver carrito
 ```bash
-curl -X GET "http://localhost:8000/carrito/ver/1"
+curl -X GET "http://localhost:8001/carrito/ver/1"
 ```
+
+## 📦 Dependencias
+
+Ver arquivo `requirements.txt` para a lista completa de dependencias.
+
+Principais:
+- `fastapi` - Framework web
+- `sqlalchemy` - ORM para a base de datos
+- `uvicorn` - Servidor ASGI
+- `python-multipart` - Soporte para formularios
 

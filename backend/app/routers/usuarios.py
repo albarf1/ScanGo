@@ -6,7 +6,7 @@ from app import models
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
-# Modelo de resposta para o usuario (sen contrasinal)
+# Usuario por ahora sin contraseña
 class DatoUsuario(BaseModel):
     id: int
     nome: str
@@ -16,7 +16,7 @@ class DatoUsuario(BaseModel):
     class Config:
         from_attributes = True
 
-# Obtén a información dun usuario polo seu ID
+# Aqui obtemos a información dun usuario polo seu ID
 @router.get("/{usuario_id}", response_model=DatoUsuario)
 def obter_usuario(usuario_id: int, db: Session = Depends(get_db)):
     usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
