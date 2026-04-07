@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pantalla_escaner.dart';
 import 'pantalla_carrito.dart';
+import '../servizos/api_servizo.dart';
 
 /// Widget principal que xestiona a navegación entre pantallas
 class PantallaPrincipal extends StatefulWidget {
@@ -19,7 +20,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   /// Índice que controla que pantalla está visible
   /// 0 = Inicio, 1 = Escanear, 2 = Carrito, 3 = Perfil
   int _indiceActual = 0;
-
   /// ID de usuario 
   final int usuarioId = 1;
 
@@ -31,15 +31,14 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   void initState() {
     super.initState();
     _pantallas = [
-      _construirPantallaInicio(),    // Pantalla 0: Inicio
-      const PantallaEscaner(),        // Pantalla 1: Escanear
-      PantallaCarrito(usuarioId: usuarioId), // Pantalla 2: Carrito
-      _construirPantallaPeril(),      // Pantalla 3: Perfil
+      _construirPantallaInicio(),    
+      const PantallaEscaner(),        
+      PantallaCarrito(usuarioId: usuarioId), 
+      _construirPantallaPeril(),      
     ];
   }
 
-  /// Constrúe a pantalla de inicio
-  /// Mostra icono dunha bolsa de compra e da a benvida
+  /// Constrúe a pantalla de inicio, cunha bolsa como icono e unha mensaxe de benvida
   Widget _construirPantallaInicio() {
     return Scaffold(
       appBar: AppBar(
@@ -70,8 +69,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     );
   }
 
-  /// Constrúe a pantalla de perfil
-  /// Mostra un icono de usuario, o título "Perfil de usuario" e a identificación do usuario
+  /// construimos a pantalla de perfil,mostra un icono de usuario, o título "Perfil de usuario" e a identificación do usuario
   Widget _construirPantallaPeril() {
     return Scaffold(
       appBar: AppBar(
@@ -94,7 +92,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             const SizedBox(height: 10),
             // Identificación do usuario
             const Text(
-              'Usuario 1',
+              'Usuario Alba',
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ],

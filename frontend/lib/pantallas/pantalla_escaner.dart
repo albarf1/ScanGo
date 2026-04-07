@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'pantalla_produto.dart';
 
-/// Pantalla de escaneo de códigos QR
-/// Usa a cámara do dispositivo para detectar códigos
+/// Pantalla de escaneo de códigos QR,utiliizamos a camara do dispositivo para detectar códigos
 class PantallaEscaner extends StatefulWidget {
   const PantallaEscaner({super.key});
 
@@ -11,14 +10,9 @@ class PantallaEscaner extends StatefulWidget {
   State<PantallaEscaner> createState() => _PantallaEscanerState();
 }
 
-/// Estado da pantalla de escaneo
-/// Controla:
-/// - A detección de códigos QR
-/// - A navegación ao produto cando se detecta un código
-/// - O estado do escaneo (activo/inactivo para evitar duplicados)
+/// Estado da pantalla de escaneo,detecta o código QR e navega á pantalla de detalles do produto
 class _PantallaEscanerState extends State<PantallaEscaner> {
-  /// Booleano que controla se o escaneo está activo
-  /// Evita que se detecte o mesmo código dúas veces
+  /// Booleano que controla se o escaneo está activo,evita que se detecte o mesmo código dúas veces
   bool escanando = true;
 
   @override
@@ -31,8 +25,7 @@ class _PantallaEscanerState extends State<PantallaEscaner> {
       ),
       body: Stack(
         children: [
-          // Cámara de escaneo con detector de códigos QR
-          // Usa a librería mobile_scanner para captar códigos de barras
+          // imou usar a librería mobile_scanner para captar códigos de barras
           MobileScanner(
             onDetect: (captura) {
               // Non fai nada se o escaneo está desactivado
@@ -42,11 +35,9 @@ class _PantallaEscanerState extends State<PantallaEscaner> {
               final codigo = captura.barcodes.first.rawValue;
               if (codigo == null) return;
 
-              // Desactiva o escaneo para non procesar o mismo código dúas veces
+              // desactivamos o escaneo para non procesar o mismo código dúas veces
               setState(() => escanando = false);
-
-              // Navega á pantalla de detalles do produto
-              // Pásalle o código QR detectado
+              // Navega á pantalla de detalles do produto, co codigo
               Navigator.push(
                 context,
                 MaterialPageRoute(

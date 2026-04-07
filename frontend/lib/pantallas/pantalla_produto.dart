@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import '../servizos/api_servizo.dart';
 import 'pantalla_carrito.dart';
 
-/// Pantalla que mostra os detalles dun produto
-/// Cargase o produto desde o QR escaneado
+/// Pantalla que mostra os detalles dun produto,co producto previamente escaneado
 class PantallaProduto extends StatefulWidget {
-  /// Código QR do produto obtido ao escanear
+  /// Código QR do produto escaneado
   final String codigoQr;
 
   const PantallaProduto({super.key, required this.codigoQr});
@@ -14,13 +13,10 @@ class PantallaProduto extends StatefulWidget {
   State<PantallaProduto> createState() => _PantallaProdutoState();
 }
 
-/// Estado da pantalla do produto
-/// Responsable de:
-/// - Cargar os datos do produto desde o backend
-/// - Mostrar a información (nome, prezo, stock, etc)
-/// - Engadir o produto ao carrito do usuario
+/// Estado da pantalla do produto, carga os datos do produto desde o backend e permite engadilo ao carrito
+
 class _PantallaProdutoState extends State<PantallaProduto> {
-  /// ID do usuario (fixo para a proba)
+  /// fixo para a proba, representa o ID do usuario que está a usar a aplicación
   final int usuarioId = 1;
   
   /// Almacena os datos do produto descargados do backend
@@ -32,8 +28,7 @@ class _PantallaProdutoState extends State<PantallaProduto> {
   /// Almacena mensaxe de erro se ocorre algun problema
   String? erro;
 
-  /// Se executa ó crear o widget
-  /// Inicia a carga dos datos do produto
+  /// imos executalo ó crear o widget, para cargar os datos do produto automaticamente
   @override
   void initState() {
     super.initState();
@@ -41,8 +36,7 @@ class _PantallaProdutoState extends State<PantallaProduto> {
   }
 
   /// Obtén os datos do produto desde o backend
-  /// Chama a ApiServizo.escanearProduto() pasando o código QR
-  /// Actualiza o estado cando os datos se cargan ou ocorre un erro
+  /// Chama a ApiServizo.escanearProduto() pasando o código QR e almacena a resposta
   Future<void> cargarProduto() async {
     try {
       // Chama ao backend para obter o produto polo seu QR
@@ -52,24 +46,20 @@ class _PantallaProdutoState extends State<PantallaProduto> {
         cargando = false;
       });
     } catch (e) {
-      // Se non se atopa o producto, mostra erro
+      // Se non se atopa o producto, mostranos un error
       setState(() {
         erro = 'Produto non atopado';
         cargando = false;
       });
     }
   }
-
-  /// Engade o produto actual ao carrito do usuario
-  /// Depois navega á pantalla do carrito
-  /// Si ocorre un erro, mostra unha notificación
+  /// añade o produto actual ao carrito do usuario e navega ata a pantalla do carrito
   Future<void> engadirAoCarrito() async {
     try {
-      // Chama ao backend para engadir o produto ao carrito
-      // Envía o ID do usuario e o código QR do producto
+      // Chama ao backend para engadir o produto ao carrito, pasando o ID do usuario e o código QR do producto
       await ApiServizo.engadirAoCarrito(usuarioId, widget.codigoQr);
       
-      // Se o widget se desacoplou, non continúa
+      // Se o widget se desacoplou, para a execución
       if (!mounted) return;
       
       // Navega á pantalla do carrito para mostrar o novo producto
@@ -80,7 +70,7 @@ class _PantallaProdutoState extends State<PantallaProduto> {
         ),
       );
     } catch (e) {
-      // Mostra un SnackBar con mensaxe de erro
+      // tiramos un SnackBar co mensaxe de error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao engadir ao carrito')),
       );
@@ -96,12 +86,12 @@ class _PantallaProdutoState extends State<PantallaProduto> {
       ),
       body: Center(
         child: cargando
-            // Se se está cargando, mostra un indicator de progreso
+            // Se se está cargando, mostra un indicador de progreso
             ? const CircularProgressIndicator()
             // Se ocorreu un erro, mostra a mensaxe
             : erro != null
                 ? Text(erro!, style: const TextStyle(color: Colors.red))
-                // Se se cargaron os datos, mostralos
+                // Se se cargaron os datos, mostrámos
                 : Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
@@ -116,7 +106,7 @@ class _PantallaProdutoState extends State<PantallaProduto> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Prezo en euros (azul para resaltar)
+                        // Prezo en euros
                         Text(
                           '${produto!['prezo']} €',
                           style: const TextStyle(

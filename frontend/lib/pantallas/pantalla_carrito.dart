@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../servizos/api_servizo.dart';
 
-/// Pantalla que mostra o carrito de compra do usuario
-/// Amosa os productos engadidos e permite finalizar a compra
+/// Pantalla que mostra o carrito de compra do usuario,permite engadir produtos e finalizar a compra
 class PantallaCarrito extends StatefulWidget {
   /// ID do usuario propietario do carrito
   final int usuarioId;
@@ -13,14 +12,9 @@ class PantallaCarrito extends StatefulWidget {
   State<PantallaCarrito> createState() => _PantallaCarritoState();
 }
 
-/// Estado da pantalla do carrito
-/// Responsable de:
-/// - Cargar os datos do carrito desde o backend
-/// - Mostrar a lista de productos
-/// - Calcular e mostrar o total
-/// - Permitir finalizar a compra
+/// Estado da pantalla do carrito,carga os datos do carrito desde o backend,mostra a lista deles engadidos,calcula o total e permite finalizar a compra
 class _PantallaCarritoState extends State<PantallaCarrito> {
-  /// Almacena os dados do carrito con productos e total
+  /// Almacena os datos do carrito con productos e total
   Map<String, dynamic>? carrito;
   
   /// Indica si os datos se están cargando
@@ -32,10 +26,8 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
     super.initState();
     cargarCarrito();
   }
-
-  /// Obtén os datos do carrito desde o backend
-  /// Chama a ApiServizo.verCarrito() pasando o ID do usuario
-  /// Actualiza o estado cando os datos se cargan
+  /// Chama a ApiServizo.verCarrito() pasando o ID do usuario e actualiza o estado con os datos recibidos
+  
   Future<void> cargarCarrito() async {
     try {
       // Chama ao backend para obter o carrito do usuario
@@ -45,7 +37,8 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
         cargando = false;
       });
     } catch (e) {
-      // Si ocorre erro, marca como cargado pero sen datos
+      print('Error ao cargar carrito: $e');
+      // Si ocorre error, marcao como cargado pero sen datos
       setState(() => cargando = false);
     }
   }
@@ -116,7 +109,7 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
                         padding: const EdgeInsets.all(12),
                         itemCount: carrito!['lineas'].length,
                         itemBuilder: (context, index) {
-                          // Datos da linea de carrito (producto)
+                          // Datos da linea de carrito 
                           final linea = carrito!['lineas'][index];
                           final subtotal = linea['subtotal'] ?? 0;
                           final cantidad = linea['cantidad'] ?? 1;
@@ -141,7 +134,7 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  // Información do producto: nome, prezo unitario e cantidad
+                                  // Información do producto: nome, prezo e cantidad
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
