@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'pantallas/pantalla_principal.dart';
 
-/// Punto de entrada da aplicación ScanGo
-/// Crea e configura a aplicación principal
+/// Punto de entrada da aplicación
 void main() {
   runApp(const ScanGoApp());
 }
 
-/// Widget raiz da aplicación ScanGo
-/// Configura:
-/// - Tema con cores azues (Material 3)
-/// - Pantalla inicial (PantallaPrincipal)
-/// - Idioma e localizacións
+/// Widget raiz da aplicación 
 class ScanGoApp extends StatelessWidget {
   const ScanGoApp({super.key});
 
@@ -21,7 +16,7 @@ class ScanGoApp extends StatelessWidget {
       title: 'ScanGo',
       // Oculta a barra de debug
       debugShowCheckedModeBanner: false,
-      // Tema da aplicación con cores azues
+      // Tema da aplicación
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
