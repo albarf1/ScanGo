@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pantallas/pantalla_principal.dart';
+import 'pantallas/pantalla_login.dart';
 
 /// Punto de entrada da aplicación
 void main() {
@@ -21,8 +21,8 @@ class ScanGoApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      // Pantalla inicial: Navegación con Bottom Navigation Bar
-      home: const PantallaPrincipal(),
+      // Pantalla inicial co Login
+      home: const PantallaLogin(),
     );
   }
 }
