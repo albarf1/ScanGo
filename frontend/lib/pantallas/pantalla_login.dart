@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pantalla_principal.dart';
+import 'pantalla_registro.dart';
 
 /// Pantalla de inicio de sesión,permite que o usuario introduza o seu correo e contrasinal para acceder 
 class PantallaLogin extends StatefulWidget {
@@ -234,6 +235,31 @@ class _PantallaLoginState extends State<PantallaLogin> {
                             ),
                           ),
                   ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Vínculo para ir a pantalla de rexistro
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Non tes conta?'),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PantallaRegistro(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Rexistrate',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
