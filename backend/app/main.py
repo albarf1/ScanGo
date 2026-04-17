@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
-from app.routers import produtos, carrito, usuarios
+from app.routers import produtos, carrito, usuarios, auth
 
 # Crea as taboas na base de datos ao arrancar
 Base.metadata.create_all(bind=engine)
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 
 # Rexistramos os routers
+app.include_router(auth.router)
 app.include_router(produtos.router)
 app.include_router(carrito.router)
 app.include_router(usuarios.router)
