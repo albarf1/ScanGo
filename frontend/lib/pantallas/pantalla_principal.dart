@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'pantalla_escaner.dart';
 import 'pantalla_carrito.dart';
-import '../servizos/api_servizo.dart';
 
 /// Widget principal que xestiona a navegación entre pantallas
 class PantallaPrincipal extends StatefulWidget {
-  const PantallaPrincipal({super.key});
+  final int usuarioId;
+  final String nomeUsuario;
+
+  const PantallaPrincipal({
+    super.key,
+    required this.usuarioId,
+    required this.nomeUsuario,
+  });
 
   @override
   State<PantallaPrincipal> createState() => _PantallaPrincipalState();
@@ -20,8 +26,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   /// Índice que controla que pantalla está visible
   /// 0 = Inicio, 1 = Escanear, 2 = Carrito, 3 = Perfil
   int _indiceActual = 0;
-  /// ID de usuario 
-  final int usuarioId = 1;
 
   /// Lista que almacena todas as pantallas
   late List<Widget> _pantallas;
@@ -33,7 +37,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     _pantallas = [
       _construirPantallaInicio(),    
       const PantallaEscaner(),        
-      PantallaCarrito(usuarioId: usuarioId), 
+      PantallaCarrito(usuarioId: widget.usuarioId),
       _construirPantallaPeril(),      
     ];
   }

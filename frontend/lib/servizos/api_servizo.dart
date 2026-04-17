@@ -117,6 +117,70 @@ class ApiServizo {
     }
   }
 
+  /// Inicia sesión, chamada POST a /auth/login. Retorna os datos do usuario se as credenciais son correctas.
+  /// Lanza excepción con mensaxe se as credenciais son incorrectas 
+  static Future<Map<String, dynamic>> iniciarSesion(
+    String email,
+    String contrasinal,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'contrasinal': contrasinal}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'Correo ou contrasinal incorrectos');
+      } else {
+        throw Exception('Erro no servidor. Inténtao máis tarde.');
+      }
+    } on Exception {
+      rethrow;
+    } catch (_) {
+      throw Exception('Sen conexión co servidor');
+    }
+  }
+
+  /// Rexistra un novo usuario, chamada POST a /auth/register. Retorna os datos do usuario creado.
+  /// Lanza se o correo xa existe ou hai erro de validación 
+  static Future<Map<String, dynamic>> registrarse(
+    String nome,
+    String email,
+    String contrasinal,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'nome': nome,
+          'email': email,
+          'contrasinal': contrasinal,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 409) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'O correo xa está rexistrado');
+      } else if (response.statusCode == 422) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'Datos non válidos');
+      } else {
+        throw Exception('Erro no servidor. Inténtao máis tarde.');
+      }
+    } on Exception {
+      rethrow;
+    } catch (e) {
+      throw Exception('Sen conexión co servidor');
+    }
+  }
+
   /// Obtén a información do usuario,chamada GET a /usuarios/{usuarioId} e retorna os datos do usuario
   static Future<Map<String, dynamic>> obterUsuario(int usuarioId) async {
     try {

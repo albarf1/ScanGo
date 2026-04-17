@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pantalla_principal.dart';
 import 'pantalla_registro.dart';
+import '../servizos/api_servizo.dart';
 
 /// Pantalla de inicio de sesión,permite que o usuario introduza o seu correo e contrasinal para acceder 
 class PantallaLogin extends StatefulWidget {
@@ -42,7 +43,6 @@ class _PantallaLoginState extends State<PantallaLogin> {
   /// Realiza o login do usuario,valida o formulario e navega á pantalla principal se as credenciais son correctas
 
   Future<void> _entrar() async {
-    // Valida que os campos non estean vacios e teñan formato correcto
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -51,23 +51,26 @@ class _PantallaLoginState extends State<PantallaLogin> {
     });
 
     try {
-      // Validación básica 
-      if (_correoController.text.contains('@') &&
-          _contrasinalController.text.length >= 6) {
-        if (!mounted) return;
+      final usuario = await ApiServizo.iniciarSesion(
+        _correoController.text.trim(),
+        _contrasinalController.text,
+      );
 
-        // Navega a PantallaPrincipal e elimina a pantalla de login 
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => const PantallaPrincipal(),
+      if (!mounted) return;
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => PantallaPrincipal(
+            usuarioId: usuario['id'] as int,
+            nomeUsuario: usuario['nome'] as String,
           ),
-          (route) => false,
-        );
-      } else {
-        setState(() => _erroMensaxe = 'Correo ou contrasinal incorrecto');
-      }
+        ),
+        (route) => false,
+      );
     } catch (e) {
-      setState(() => _erroMensaxe = 'Erro ao intentar entrar: $e');
+      if (!mounted) return;
+      final mensaxe = e.toString().replaceFirst('Exception: ', '');
+      setState(() => _erroMensaxe = mensaxe);
     } finally {
       if (mounted) setState(() => _cargando = false);
     }
@@ -175,7 +178,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
                       return 'Introduce o teu contrasinal';
                     }
                     if (value.length < 6) {
-                      return 'O contrasinal debe ter alomenos 6 caracteres';
+                      return 'O contrasinal debe ter polo menos 6 caracteres';
                     }
                     return null;
                   },

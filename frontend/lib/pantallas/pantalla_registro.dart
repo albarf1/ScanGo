@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pantalla_login.dart';
+import '../servizos/api_servizo.dart';
 
 /// Pantalla de rexistro de usuario, permite que o usuario cree unha nova conta introducindo nome, correo e contrasinal
 class PantallaRegistro extends StatefulWidget {
@@ -50,10 +51,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
 
   /// Realiza o rexistro do usuario,valida o formulario e navega á pantalla de login si todo é correcto
 
-  /// Realiza o rexistro do usuario,valida o formulario e navega á pantalla de login si todo é correcto
-
   Future<void> _registrarse() async {
-    // Valida que os campos non estean vacios e teñan formato correcto
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -62,26 +60,64 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     });
 
     try {
-      // Validación básica
-      if (_nomeController.text.isNotEmpty &&
-          _correoController.text.contains('@') &&
-          _contrasinalController.text.length >= 8 &&
-          _contrasinalController.text == _contrasinalConfirmController.text) {
-        
-        if (!mounted) return;
+      await ApiServizo.registrarse(
+        _nomeController.text.trim(),
+        _correoController.text.trim(),
+        _contrasinalController.text,
+      );
 
-        // Navega a PantallaLogin e elimina a pantalla de rexistro
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => const PantallaLogin(),
-          ),
-          (route) => false,
-        );
-      } else {
-        setState(() => _erroMensaxe = 'Erro ao rexistrarse');
-      }
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Conta creada correctamente. Inicia sesión.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const PantallaLogin()),
+        (route) => false,
+      );
     } catch (e) {
-      setState(() => _erroMensaxe = 'Erro: $e');
+      if (!mounted) return;
+
+      final mensaxe = e.toString().replaceFirst('Exception: ', '');
+
+      if (mensaxe.contains('xa está rexistrado')) {
+        setState(() => _cargando = false);
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Correo xa rexistrado'),
+            content: const Text(
+              'O correo electrónico xa ten unha conta en ScanGo.\n\n¿Queres iniciar sesión?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                onPressed: () {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const PantallaLogin()),
+                    (route) => false,
+                  );
+                },
+                child: const Text(
+                  'Iniciar sesión',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      setState(() => _erroMensaxe = mensaxe);
     } finally {
       if (mounted) setState(() => _cargando = false);
     }
@@ -131,6 +167,32 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                   ),
                 ),
                 const SizedBox(height: 30),
+
+                // Erro de servidor (correo duplicado, sen conexión, etc.)
+                if (_erroMensaxe != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      border: Border.all(color: Colors.red),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline, color: Colors.red, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _erroMensaxe!,
+                            style: const TextStyle(color: Colors.red, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Campo de nome completo
                 TextFormField(
@@ -255,26 +317,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12),
-
-                // Mostra mensaxe de erro se existe
-                if (_erroMensaxe != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red[100],
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _erroMensaxe!,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
                 const SizedBox(height: 24),
 
                 // Botón de rexistro
