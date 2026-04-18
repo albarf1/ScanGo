@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'pantalla_principal.dart';
 import 'pantalla_registro.dart';
 import '../servizos/api_servizo.dart';
+import '../widgets/logo_cabeceira.dart';
+import '../widgets/campo_correo.dart';
+import '../widgets/campo_contrasinal.dart';
+import '../widgets/boton_principal.dart';
+import '../widgets/contedor_erro.dart';
+import '../widgets/enlace_navegacion.dart';
 
-/// Pantalla de inicio de sesión,permite que o usuario introduza o seu correo e contrasinal para acceder 
+/// Pantalla de inicio de sesión
 class PantallaLogin extends StatefulWidget {
   const PantallaLogin({super.key});
 
@@ -11,28 +17,13 @@ class PantallaLogin extends StatefulWidget {
   State<PantallaLogin> createState() => _PantallaLoginState();
 }
 
-
-/// Xestiona:campos de correo e contrasinal,validación do formulario,envío dos datos ao backend e redirección á pantalla principal ao entrar correctamente
 class _PantallaLoginState extends State<PantallaLogin> {
-  /// Clave para validar o formulario
   final _formKey = GlobalKey<FormState>();
-
-  /// Controlador do correo
   final _correoController = TextEditingController();
-
-  /// Controlador do contrasinal
   final _contrasinalController = TextEditingController();
-
-  /// Indica se se está cargando a petición ao backend
   bool _cargando = false;
-
-  /// Controla se se mostra ou oculta o contrasinal
-  bool _mostrarContrasinal = false;
-
-  /// Almacena o mensaxe de erro si o login falla
   String? _erroMensaxe;
 
-  /// Libera os recursos dos controladores
   @override
   void dispose() {
     _correoController.dispose();
@@ -40,24 +31,17 @@ class _PantallaLoginState extends State<PantallaLogin> {
     super.dispose();
   }
 
-  /// Realiza o login do usuario,valida o formulario e navega á pantalla principal se as credenciais son correctas
-
+  /// Valida o formulario e chama ao backend para autenticar o usuario
   Future<void> _entrar() async {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _cargando = true;
-      _erroMensaxe = null;
-    });
+    setState(() { _cargando = true; _erroMensaxe = null; });
 
     try {
       final usuario = await ApiServizo.iniciarSesion(
         _correoController.text.trim(),
         _contrasinalController.text,
       );
-
       if (!mounted) return;
-
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (_) => PantallaPrincipal(
@@ -69,15 +53,12 @@ class _PantallaLoginState extends State<PantallaLogin> {
       );
     } catch (e) {
       if (!mounted) return;
-      final mensaxe = e.toString().replaceFirst('Exception: ', '');
-      setState(() => _erroMensaxe = mensaxe);
+      setState(() => _erroMensaxe = e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _cargando = false);
     }
   }
 
-  /// Constrúe a interfaz da pantalla de login
-  /// Mostra un formulario co logo o correo e contrasinal
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,175 +75,33 @@ class _PantallaLoginState extends State<PantallaLogin> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo de ScanGo con icono de QR
-                Icon(
-                  Icons.qr_code_2,
-                  size: 80,
-                  color: Colors.blue[600],
-                ),
-                const SizedBox(height: 20),
-
-                // Título da aplicación
-                const Text(
-                  'ScanGo',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Subtítulo
-                const Text(
-                  'Inicia sesión para continuar',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 30),
-
-                // Campo de correo
-                TextFormField(
-                  controller: _correoController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Correo electrónico',
-                    hintText: 'alba@scango.com',
-                    prefixIcon: const Icon(Icons.email),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  // Validador do campo
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Introduce o teu email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Email non válido';
-                    }
-                    return null;
-                  },
-                ),
+                const LogoCabeceira(subtitulo: 'Inicia sesión para continuar'),
+                CampoCorreo(controller: _correoController),
                 const SizedBox(height: 16),
-
-                // Campo de contrasinal
-                TextFormField(
+                CampoContrasinal(
                   controller: _contrasinalController,
-                  obscureText: !_mostrarContrasinal,
-                  decoration: InputDecoration(
-                    labelText: 'Contrasinal',
-                    hintText: 'Introduce o teu contrasinal',
-                    prefixIcon: const Icon(Icons.lock),
-                    // Botón para mostrar/ocultar o contrasinal
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _mostrarContrasinal
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() =>
-                            _mostrarContrasinal = !_mostrarContrasinal);
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  // Validador do campo
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Introduce o teu contrasinal';
-                    }
-                    if (value.length < 6) {
-                      return 'O contrasinal debe ter polo menos 6 caracteres';
-                    }
+                  labelText: 'Contrasinal',
+                  hintText: 'Introduce o teu contrasinal',
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Introduce o teu contrasinal';
+                    if (v.length < 6) return 'O contrasinal debe ter alomenos 6 caracteres';
                     return null;
                   },
                 ),
                 const SizedBox(height: 12),
-
-                // Mostra mensaxe de erro se existe
-                if (_erroMensaxe != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red[100],
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _erroMensaxe!,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 24),
-
-                // Botón de entrar
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _cargando ? null : _entrar,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      disabledBackgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: _cargando
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : const Text(
-                            'Entrar',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                  ),
-                ),
+                if (_erroMensaxe != null) ...[
+                  ContedorErro(mensaxe: _erroMensaxe!),
+                  const SizedBox(height: 12),
+                ],
+                const SizedBox(height: 12),
+                BotonPrincipal(texto: 'Entrar', cargando: _cargando, onPressed: _entrar),
                 const SizedBox(height: 16),
-                
-                // Vínculo para ir a pantalla de rexistro
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Non tes conta?'),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const PantallaRegistro(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'Rexistrate',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
+                EnlaceNavegacion(
+                  texto: 'Non tes conta?',
+                  textoEnlace: 'Rexistrate',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PantallaRegistro()),
+                  ),
                 ),
               ],
             ),
