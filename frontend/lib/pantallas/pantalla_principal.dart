@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pantalla_escaner.dart';
 import 'pantalla_carrito.dart';
+import 'pantalla_login.dart';
 
 /// Widget principal que xestiona a navegación entre pantallas
 class PantallaPrincipal extends StatefulWidget {
@@ -17,11 +18,7 @@ class PantallaPrincipal extends StatefulWidget {
   State<PantallaPrincipal> createState() => _PantallaPrincipalState();
 }
 
-/// Estado da pantalla principal
-/// Xestiona:
-/// - Índice actual (que pantalla se mostra)
-/// - Lista de pantallas
-/// - Navegación entre elas
+/// Xestiona a navegación entre as diferentes pantallas da aplicación:
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
   /// Índice que controla que pantalla está visible
   /// 0 = Inicio, 1 = Escanear, 2 = Carrito, 3 = Perfil
@@ -35,14 +32,14 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   void initState() {
     super.initState();
     _pantallas = [
-      _construirPantallaInicio(),    
-      const PantallaEscaner(),        
+      _construirPantallaInicio(),
+      const PantallaEscaner(),
       PantallaCarrito(usuarioId: widget.usuarioId),
-      _construirPantallaPeril(),      
+      _construirPantallaPeril(),
     ];
   }
 
-  /// Constrúe a pantalla de inicio, cunha bolsa como icono e unha mensaxe de benvida
+  /// Constrúe a pantalla de inicio cunha bolsa como icono e mensaxe de benvida
   Widget _construirPantallaInicio() {
     return Scaffold(
       appBar: AppBar(
@@ -73,7 +70,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     );
   }
 
-  /// construimos a pantalla de perfil,mostra un icono de usuario, o título "Perfil de usuario" e a identificación do usuario
+  /// Constrúe a pantalla de perfil co nome real do usuario e botón de pechar sesión
   Widget _construirPantallaPeril() {
     return Scaffold(
       appBar: AppBar(
@@ -94,10 +91,30 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            // Identificación do usuario
-            const Text(
-              'Usuario Alba',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+            // Nome do usuario autenticado
+            Text(
+              widget.nomeUsuario,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 40),
+            // Botón para pechar sesión
+            SizedBox(
+              width: 220,
+              height: 48,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.logout, color: Colors.red),
+                label: const Text(
+                  'Pechar sesión',
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.red),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: _confirmarPecharSesion,
+              ),
             ),
           ],
         ),
@@ -105,49 +122,65 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     );
   }
 
-  /// Constrúe a interfaz principal con:
-  /// - Pantalla actual (cambia segundo _indiceActual)
-  /// - Bottom Navigation Bar con 4 opcions
+  /// Mostra un diálogo de confirmación antes de pechar sesión
+  void _confirmarPecharSesion() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Pechar sesión'),
+        content: const Text('¿Seguro que queres pechar sesión?'),
+        actions: [
+          // Botón cancelar
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          // Botón confirmar, redirixe ao login eliminando o historial
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const PantallaLogin()),
+                (route) => false,
+              );
+            },
+            child: const Text(
+              'Pechar sesión',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Constrúe a interfaz principal coa pantalla actual e a barra de navegación inferior
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Mostra a pantalla corresponde ao índice actual
+      // Mostra a pantalla correspondente ao índice actual
       body: _pantallas[_indiceActual],
-      
-      // Barra de navegación inferior con 4 botones
+
+      // Barra de navegación inferior con 4 botóns
       bottomNavigationBar: BottomNavigationBar(
-        // Marca cual botón está seleccionado
         currentIndex: _indiceActual,
-        // Ao premer un botón, cambia o índice
         onTap: (indice) {
           setState(() {
             _indiceActual = indice;
           });
         },
         backgroundColor: Colors.white,
-        selectedItemColor: Colors.blue,  // Color do botón seleccionado
-        unselectedItemColor: Colors.grey, // Color dos outros botóns
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
         items: const [
           // Botón 0: Inicio
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
           // Botón 1: Escanear
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grid_3x3),
-            label: 'Escanear',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.grid_3x3), label: 'Escanear'),
           // Botón 2: Carrito
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Carrito',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Carrito'),
           // Botón 3: Perfil
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
     );
