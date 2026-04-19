@@ -93,7 +93,6 @@ class _PantallaLoginState extends State<PantallaLogin> {
                   ContedorErro(mensaxe: _erroMensaxe!),
                   const SizedBox(height: 12),
                 ],
-                const SizedBox(height: 12),
                 BotonPrincipal(texto: 'Entrar', cargando: _cargando, onPressed: _entrar),
                 const SizedBox(height: 16),
                 EnlaceNavegacion(

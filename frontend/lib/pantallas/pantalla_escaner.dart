@@ -26,6 +26,7 @@ class _PantallaEscanerState extends State<PantallaEscaner> {
   /// Navega á pantalla do produto co código indicado
   void _irAProduto(String codigo) {
     if (codigo.trim().isEmpty) return;
+    _codigoController.clear();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => PantallaProduto(codigoQr: codigo.trim())),

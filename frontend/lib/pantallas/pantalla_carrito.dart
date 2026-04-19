@@ -37,8 +37,7 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
         cargando = false;
       });
     } catch (e) {
-      print('Error ao cargar carrito: $e');
-      // Si ocorre error, marcao como cargado pero sen datos
+      // Se ocorre erro, marcao como cargado pero sen datos
       setState(() => cargando = false);
     }
   }
