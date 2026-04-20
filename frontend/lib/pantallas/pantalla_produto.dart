@@ -2,41 +2,39 @@ import 'package:flutter/material.dart';
 import '../servizos/api_servizo.dart';
 import 'pantalla_carrito.dart';
 
-/// Pantalla que mostra os detalles dun produto,co producto previamente escaneado
+/// Pantalla que mostra os detalles dun produto, co producto previamente escaneado
 class PantallaProduto extends StatefulWidget {
   /// Código QR do produto escaneado
   final String codigoQr;
 
-  const PantallaProduto({super.key, required this.codigoQr});
+  /// ID do usuario autenticado
+  final int usuarioId;
+
+  const PantallaProduto({super.key, required this.codigoQr, required this.usuarioId});
 
   @override
   State<PantallaProduto> createState() => _PantallaProdutoState();
 }
 
 /// Estado da pantalla do produto, carga os datos do produto desde o backend e permite engadilo ao carrito
-
 class _PantallaProdutoState extends State<PantallaProduto> {
-  /// fixo para a proba, representa o ID do usuario que está a usar a aplicación
-  final int usuarioId = 1;
-  
   /// Almacena os datos do produto descargados do backend
   Map<String, dynamic>? produto;
-  
+
   /// Indica se os datos se están cargando
   bool cargando = true;
-  
-  /// Almacena mensaxe de erro se ocorre algun problema
+
+  /// Almacena mensaxe de erro se ocorre algún problema
   String? erro;
 
-  /// imos executalo ó crear o widget, para cargar os datos do produto automaticamente
+  /// Carga os datos do produto ao crear o widget
   @override
   void initState() {
     super.initState();
     cargarProduto();
   }
 
-  /// Obtén os datos do produto desde o backend
-  /// Chama a ApiServizo.escanearProduto() pasando o código QR e almacena a resposta
+  /// Obtén os datos do produto desde o backend polo código QR
   Future<void> cargarProduto() async {
     try {
       // Chama ao backend para obter o produto polo seu QR
@@ -46,31 +44,30 @@ class _PantallaProdutoState extends State<PantallaProduto> {
         cargando = false;
       });
     } catch (e) {
-      // Se non se atopa o producto, mostranos un error
+      // Se non se atopa o producto, mostramos un erro
       setState(() {
         erro = 'Produto non atopado';
         cargando = false;
       });
     }
   }
-  /// añade o produto actual ao carrito do usuario e navega ata a pantalla do carrito
+
+  /// Engade o produto actual ao carrito do usuario e navega á pantalla do carrito
   Future<void> engadirAoCarrito() async {
     try {
-      // Chama ao backend para engadir o produto ao carrito, pasando o ID do usuario e o código QR do producto
-      await ApiServizo.engadirAoCarrito(usuarioId, widget.codigoQr);
-      
-      // Se o widget se desacoplou, para a execución
+      // Chama ao backend para engadir o produto ao carrito
+      await ApiServizo.engadirAoCarrito(widget.usuarioId, widget.codigoQr);
+
       if (!mounted) return;
-      
-      // Navega á pantalla do carrito para mostrar o novo producto
+
+      // Navega á pantalla do carrito para mostrar o novo produto
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => PantallaCarrito(usuarioId: usuarioId),
+          builder: (_) => PantallaCarrito(usuarioId: widget.usuarioId),
         ),
       );
     } catch (e) {
-      // tiramos un SnackBar co mensaxe de error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao engadir ao carrito')),
       );
@@ -86,18 +83,15 @@ class _PantallaProdutoState extends State<PantallaProduto> {
       ),
       body: Center(
         child: cargando
-            // Se se está cargando, mostra un indicador de progreso
             ? const CircularProgressIndicator()
-            // Se ocorreu un erro, mostra a mensaxe
             : erro != null
                 ? Text(erro!, style: const TextStyle(color: Colors.red))
-                // Se se cargaron os datos, mostrámos
                 : Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Nome do producto
+                        // Nome do produto
                         Text(
                           produto!['nome'],
                           style: const TextStyle(
@@ -116,14 +110,14 @@ class _PantallaProdutoState extends State<PantallaProduto> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        // Descripción do producto
+                        // Descrición do produto
                         Text(
                           produto!['descripcion'] ?? '',
                           style: const TextStyle(fontSize: 16),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
-                        // Cantidad de stock disponible
+                        // Stock dispoñible
                         Text(
                           'Stock: ${produto!['stock']} unidades',
                           style: const TextStyle(color: Colors.grey),
