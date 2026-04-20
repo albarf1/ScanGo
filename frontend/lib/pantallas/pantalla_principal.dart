@@ -33,7 +33,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     super.initState();
     _pantallas = [
       _construirPantallaInicio(),
-      const PantallaEscaner(),
+      PantallaEscaner(usuarioId: widget.usuarioId),
       PantallaCarrito(usuarioId: widget.usuarioId),
       _construirPantallaPeril(),
     ];

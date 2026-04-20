@@ -4,7 +4,9 @@ import 'pantalla_produto.dart';
 
 /// Pantalla de escaneo de códigos QR, utiliza a cámara do dispositivo para detectar códigos
 class PantallaEscaner extends StatefulWidget {
-  const PantallaEscaner({super.key});
+  final int usuarioId;
+
+  const PantallaEscaner({super.key, required this.usuarioId});
 
   @override
   State<PantallaEscaner> createState() => _PantallaEscanerState();
@@ -29,7 +31,12 @@ class _PantallaEscanerState extends State<PantallaEscaner> {
     _codigoController.clear();
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => PantallaProduto(codigoQr: codigo.trim())),
+      MaterialPageRoute(
+        builder: (_) => PantallaProduto(
+          codigoQr: codigo.trim(),
+          usuarioId: widget.usuarioId,
+        ),
+      ),
     ).then((_) => setState(() => escanando = true));
   }
 
