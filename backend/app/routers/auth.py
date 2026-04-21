@@ -26,6 +26,7 @@ class RespostaUsuario(BaseModel):
     id: int
     nome: str
     email: str
+    e_admin: bool
 
     class Config:
         from_attributes = True
