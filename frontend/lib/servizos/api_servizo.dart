@@ -197,4 +197,44 @@ class ApiServizo {
       throw Exception('Error ao obter usuario: $e');
     }
   }
+
+  /// Crea un novo produto no catálogo, chamada POST a /produtos/
+  /// Lanza excepción se o código QR xa existe (409) ou os datos non son válidos (422)
+  static Future<Map<String, dynamic>> crearProduto({
+    required String nome,
+    required double prezo,
+    required int stock,
+    required String codigoQr,
+    String? descripcion,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/produtos/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'nome': nome,
+          'prezo': prezo,
+          'stock': stock,
+          'codigo_qr': codigoQr,
+          'descripcion': descripcion,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 409) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'O código QR xa está en uso');
+      } else if (response.statusCode == 422) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'Datos non válidos');
+      } else {
+        throw Exception('Erro no servidor. Inténtao máis tarde.');
+      }
+    } on Exception {
+      rethrow;
+    } catch (_) {
+      throw Exception('Sen conexión co servidor');
+    }
+  }
 }
