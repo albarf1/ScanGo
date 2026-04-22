@@ -70,7 +70,7 @@ def engadir_produto(datos: PeticionEngadir, db: Session = Depends(get_db)):
         db.add(linea)
 
     db.commit()
-    return {"mensaxe": f"{produto.nome} engadido ao carrito ✓"}
+    return {"mensaxe": f"{produto.nome} engadido ao carrito "}
 
 
 # Devolve o carrito activo do usuario co total calculado
