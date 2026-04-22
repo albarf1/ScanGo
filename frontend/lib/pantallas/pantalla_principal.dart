@@ -2,32 +2,33 @@ import 'package:flutter/material.dart';
 import 'pantalla_escaner.dart';
 import 'pantalla_carrito.dart';
 import 'pantalla_login.dart';
+import 'pantalla_admin.dart';
 
 /// Widget principal que xestiona a navegación entre pantallas
 class PantallaPrincipal extends StatefulWidget {
   final int usuarioId;
   final String nomeUsuario;
+  final bool eAdmin;
 
   const PantallaPrincipal({
     super.key,
     required this.usuarioId,
     required this.nomeUsuario,
+    this.eAdmin = false,
   });
 
   @override
   State<PantallaPrincipal> createState() => _PantallaPrincipalState();
 }
 
-/// Xestiona a navegación entre as diferentes pantallas da aplicación:
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
   /// Índice que controla que pantalla está visible
-  /// 0 = Inicio, 1 = Escanear, 2 = Carrito, 3 = Perfil
   int _indiceActual = 0;
 
   /// Lista que almacena todas as pantallas
   late List<Widget> _pantallas;
 
-  /// Inicializa a lista de pantallas
+  /// Inicializa a lista de pantallas segundo o rol do usuario
   @override
   void initState() {
     super.initState();
@@ -35,6 +36,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       _construirPantallaInicio(),
       PantallaEscaner(usuarioId: widget.usuarioId),
       PantallaCarrito(usuarioId: widget.usuarioId),
+      if (widget.eAdmin) const PantallaAdmin(),
       _construirPantallaPeril(),
     ];
   }
@@ -154,34 +156,36 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     );
   }
 
+  /// Xera os ítems da barra de navegación segundo o rol do usuario
+  List<BottomNavigationBarItem> _itemsNavegacion() {
+    return [
+      const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+      const BottomNavigationBarItem(icon: Icon(Icons.grid_3x3), label: 'Escanear'),
+      const BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Carrito'),
+      if (widget.eAdmin)
+        const BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings), label: 'Admin'),
+      const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+    ];
+  }
+
   /// Constrúe a interfaz principal coa pantalla actual e a barra de navegación inferior
   @override
   Widget build(BuildContext context) {
+    final items = _itemsNavegacion();
     return Scaffold(
       // Mostra a pantalla correspondente ao índice actual
       body: _pantallas[_indiceActual],
 
-      // Barra de navegación inferior con 4 botóns
+      // Barra de navegación inferior con botóns dinámicos segundo o rol
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceActual,
-        onTap: (indice) {
-          setState(() {
-            _indiceActual = indice;
-          });
-        },
+        onTap: (indice) => setState(() => _indiceActual = indice),
         backgroundColor: Colors.white,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        items: const [
-          // Botón 0: Inicio
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          // Botón 1: Escanear
-          BottomNavigationBarItem(icon: Icon(Icons.grid_3x3), label: 'Escanear'),
-          // Botón 2: Carrito
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Carrito'),
-          // Botón 3: Perfil
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-        ],
+        // Necesario para que se vexan as etiquetas cando hai máis de 3 ítems
+        type: BottomNavigationBarType.fixed,
+        items: items,
       ),
     );
   }

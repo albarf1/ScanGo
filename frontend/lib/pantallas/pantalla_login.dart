@@ -47,6 +47,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
           builder: (_) => PantallaPrincipal(
             usuarioId: usuario['id'] as int,
             nomeUsuario: usuario['nome'] as String,
+            eAdmin: usuario['e_admin'] as bool,
           ),
         ),
         (route) => false,
