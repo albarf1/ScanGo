@@ -42,6 +42,19 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
     }
   }
 
+  /// Elimina un produto do carrito e recarga os datos
+  Future<void> _eliminarProduto(String codigoQr) async {
+    try {
+      await ApiServizo.eliminarDoCarrito(widget.usuarioId, codigoQr);
+      await cargarCarrito();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -169,6 +182,15 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
                                       fontSize: 14,
                                       color: Colors.blue,
                                     ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Botón para eliminar o produto do carrito
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline,
+                                        color: Colors.red),
+                                    tooltip: 'Eliminar',
+                                    onPressed: () => _eliminarProduto(
+                                        linea['codigo_qr'] as String),
                                   ),
                                 ],
                               ),

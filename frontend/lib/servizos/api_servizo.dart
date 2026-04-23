@@ -181,6 +181,21 @@ class ApiServizo {
     }
   }
 
+  /// Elimina un produto do carrito, chamada DELETE a /carrito/eliminar/{usuarioId}/{codigoQr}
+  static Future<void> eliminarDoCarrito(int usuarioId, String codigoQr) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/carrito/eliminar/$usuarioId/$codigoQr'),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Erro ao eliminar do carrito');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   /// Obtén a información do usuario,chamada GET a /usuarios/{usuarioId} e retorna os datos do usuario
   static Future<Map<String, dynamic>> obterUsuario(int usuarioId) async {
     try {
