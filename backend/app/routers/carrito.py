@@ -21,6 +21,7 @@ class ProductoEnCarrito(BaseModel):
     prezo_unitario: float
     cantidad: int
     subtotal: float
+    codigo_qr: str
 
 
 # Informacion completa do carrito co total
@@ -95,7 +96,8 @@ def ver_carrito(usuario_id: int, db: Session = Depends(get_db)):
             nome_produto=l.producto.nome,
             prezo_unitario=l.producto.prezo,
             cantidad=l.cantidad,
-            subtotal=subtotal
+            subtotal=subtotal,
+            codigo_qr=l.producto.codigo_qr
         ))
 
     return CarritoDetalle(id=carrito.id, lineas=lineas, total=total)
