@@ -181,6 +181,47 @@ class ApiServizo {
     }
   }
 
+  /// Finaliza a compra, chamada POST a /carrito/finalizar/{usuarioId}. Devolve o ticket coas liñas e o total.
+  static Future<Map<String, dynamic>> finalizarCompra(int usuarioId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/carrito/finalizar/$usuarioId'),
+      );
+
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else if (response.statusCode == 400) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'O carrito está baleiro');
+      } else if (response.statusCode == 404) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'Non hai carrito activo');
+      } else {
+        throw Exception('Erro no servidor. Inténtao máis tarde.');
+      }
+    } on Exception {
+      rethrow;
+    } catch (_) {
+      throw Exception('Sen conexión co servidor');
+    }
+  }
+
+  /// Actualiza a cantidade dun produto no carrito, chamada PUT a /carrito/actualizar/{usuarioId}/{codigoQr}
+  static Future<void> actualizarCantidade(int usuarioId, String codigoQr, int cantidad) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/carrito/actualizar/$usuarioId/$codigoQr'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'cantidad': cantidad}),
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Erro ao actualizar cantidade');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   /// Elimina un produto do carrito, chamada DELETE a /carrito/eliminar/{usuarioId}/{codigoQr}
   static Future<void> eliminarDoCarrito(int usuarioId, String codigoQr) async {
     try {
