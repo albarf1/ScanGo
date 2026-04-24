@@ -15,6 +15,27 @@ class PeticionEngadir(BaseModel):
     cantidad: int = 1
 
 
+# Datos para actualizar a cantidade dunha liña do carrito
+class PeticionActualizar(BaseModel):
+    cantidad: int
+
+
+# Informacion dunha liña do ticket de compra
+class LineaTicket(BaseModel):
+    nome_produto: str
+    prezo_unitario: float
+    cantidad: int
+    subtotal: float
+
+
+# Resposta ao finalizar a compra: ticket co resumo
+class RespostaCompra(BaseModel):
+    compra_id: int
+    total: float
+    data: str
+    lineas: List[LineaTicket]
+
+
 # Informacion dunha liña do carrito
 class ProductoEnCarrito(BaseModel):
     nome_produto: str
@@ -133,3 +154,84 @@ def eliminar_produto(usuario_id: int, codigo_qr: str, db: Session = Depends(get_
     db.delete(linea)
     db.commit()
     return {"mensaxe": f"{produto.nome} eliminado do carrito "}
+
+
+# Actualiza a cantidade dun produto no carrito
+@router.put("/actualizar/{usuario_id}/{codigo_qr}")
+def actualizar_cantidad(usuario_id: int, codigo_qr: str, datos: PeticionActualizar, db: Session = Depends(get_db)):
+    if datos.cantidad < 1:
+        raise HTTPException(status_code=400, detail="A cantidade debe ser maior que cero")
+
+    carrito = db.query(models.Carrito).filter(
+        models.Carrito.usuario_id == usuario_id,
+        models.Carrito.activo == True
+    ).first()
+    if not carrito:
+        raise HTTPException(status_code=404, detail="Non hai carrito activo")
+
+    produto = db.query(models.Producto).filter(
+        models.Producto.codigo_qr == codigo_qr
+    ).first()
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto non atopado")
+
+    linea = db.query(models.LineaCarrito).filter(
+        models.LineaCarrito.carrito_id == carrito.id,
+        models.LineaCarrito.producto_id == produto.id
+    ).first()
+    if not linea:
+        raise HTTPException(status_code=404, detail="O produto non está no carrito")
+
+    linea.cantidad = datos.cantidad
+    db.commit()
+    return {"mensaxe": f"Cantidade actualizada a {datos.cantidad}"}
+
+
+# Finaliza a compra: garda o rexistro, marca o carrito como inactivo e devolve o ticket
+@router.post("/finalizar/{usuario_id}", response_model=RespostaCompra, status_code=201)
+def finalizar_compra(usuario_id: int, db: Session = Depends(get_db)):
+    # Buscamos o carrito activo do usuario
+    carrito = db.query(models.Carrito).filter(
+        models.Carrito.usuario_id == usuario_id,
+        models.Carrito.activo == True
+    ).first()
+
+    if not carrito:
+        raise HTTPException(status_code=404, detail="Non hai carrito activo para finalizar")
+
+    if not carrito.lineas:
+        raise HTTPException(status_code=400, detail="O carrito está baleiro")
+
+    # Calculamos o total
+    total = sum(l.producto.prezo * l.cantidad for l in carrito.lineas)
+
+    # Gardamos o rexistro da compra
+    compra = models.Compra(
+        usuario_id=usuario_id,
+        carrito_id=carrito.id,
+        total=total,
+    )
+    db.add(compra)
+
+    # Marcamos o carrito como inactivo
+    carrito.activo = False
+    db.commit()
+    db.refresh(compra)
+
+    # Montamos as liñas do ticket
+    lineas = [
+        LineaTicket(
+            nome_produto=l.producto.nome,
+            prezo_unitario=l.producto.prezo,
+            cantidad=l.cantidad,
+            subtotal=l.producto.prezo * l.cantidad,
+        )
+        for l in carrito.lineas
+    ]
+
+    return RespostaCompra(
+        compra_id=compra.id,
+        total=total,
+        data=compra.data.strftime("%d/%m/%Y %H:%M"),
+        lineas=lineas,
+    )

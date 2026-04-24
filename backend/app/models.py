@@ -57,6 +57,23 @@ class Carrito(Base):
         return f"<Carrito {self.id} usuario={self.usuario_id} activo={self.activo}>"
 
 
+class Compra(Base):
+    # Taboa que rexistra cada compra finalizada
+    __tablename__ = "compras"
+
+    id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    carrito_id = Column(Integer, ForeignKey("carritos.id"))
+    total = Column(Float)
+    data = Column(DateTime, default=datetime.utcnow)
+
+    usuario = relationship("Usuario")
+    carrito = relationship("Carrito")
+
+    def __repr__(self):
+        return f"<Compra {self.id} usuario={self.usuario_id} total={self.total}>"
+
+
 class LineaCarrito(Base):
     # Cada liña representa un produto dentro do carrito
     __tablename__ = "lineas_carrito"
