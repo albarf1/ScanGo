@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../servizos/api_servizo.dart';
-import 'pantalla_carrito.dart';
 
 /// Pantalla que mostra os detalles dun produto, co producto previamente escaneado
 class PantallaProduto extends StatefulWidget {
@@ -16,18 +15,14 @@ class PantallaProduto extends StatefulWidget {
   State<PantallaProduto> createState() => _PantallaProdutoState();
 }
 
-/// Estado da pantalla do produto, carga os datos do produto desde o backend e permite engadilo ao carrito
 class _PantallaProdutoState extends State<PantallaProduto> {
-  /// Almacena os datos do produto descargados do backend
   Map<String, dynamic>? produto;
-
-  /// Indica se os datos se están cargando
   bool cargando = true;
-
-  /// Almacena mensaxe de erro se ocorre algún problema
   String? erro;
 
-  /// Carga os datos do produto ao crear o widget
+  /// Cantidade seleccionada polo usuario antes de engadir ao carrito
+  int _cantidade = 1;
+
   @override
   void initState() {
     super.initState();
@@ -37,37 +32,43 @@ class _PantallaProdutoState extends State<PantallaProduto> {
   /// Obtén os datos do produto desde o backend polo código QR
   Future<void> cargarProduto() async {
     try {
-      // Chama ao backend para obter o produto polo seu QR
       final datos = await ApiServizo.escanearProduto(widget.codigoQr);
-      setState(() {
-        produto = datos;
-        cargando = false;
-      });
+      setState(() { produto = datos; cargando = false; });
     } catch (e) {
-      // Se non se atopa o producto, mostramos un erro
-      setState(() {
-        erro = 'Produto non atopado';
-        cargando = false;
-      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Produto non atopado'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      // Agardamos a que o snackbar sexa visible e volvemos ao escáner
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+      Navigator.of(context).pop();
     }
   }
 
-  /// Engade o produto actual ao carrito do usuario e navega á pantalla do carrito
+  /// Engade o produto co número de unidades seleccionadas e volta ao escáner
   Future<void> engadirAoCarrito() async {
     try {
-      // Chama ao backend para engadir o produto ao carrito
-      await ApiServizo.engadirAoCarrito(widget.usuarioId, widget.codigoQr);
-
+      await ApiServizo.engadirAoCarrito(
+        widget.usuarioId,
+        widget.codigoQr,
+        cantidad: _cantidade,
+      );
       if (!mounted) return;
-
-      // Navega á pantalla do carrito para mostrar o novo produto
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PantallaCarrito(usuarioId: widget.usuarioId),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$_cantidade ${_cantidade == 1 ? 'unidade' : 'unidades'} engadidas ao carrito'),
+          backgroundColor: Colors.green,
         ),
       );
+      // Volvemos ao escáner para seguir comprando
+      Navigator.of(context).pop();
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao engadir ao carrito')),
       );
@@ -94,20 +95,13 @@ class _PantallaProdutoState extends State<PantallaProduto> {
                         // Nome do produto
                         Text(
                           produto!['nome'],
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
                         // Prezo en euros
                         Text(
                           '${produto!['prezo']} €',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(fontSize: 20, color: Colors.blue, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         // Descrición do produto
@@ -123,6 +117,40 @@ class _PantallaProdutoState extends State<PantallaProduto> {
                           style: const TextStyle(color: Colors.grey),
                         ),
                         const SizedBox(height: 32),
+
+                        // Selector de cantidade
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Botón para diminuír cantidade
+                            IconButton(
+                              onPressed: _cantidade > 1
+                                  ? () => setState(() => _cantidade--)
+                                  : null,
+                              icon: const Icon(Icons.remove_circle_outline),
+                              iconSize: 32,
+                              color: Colors.blue,
+                            ),
+                            // Cantidade actual
+                            SizedBox(
+                              width: 48,
+                              child: Text(
+                                '$_cantidade',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            // Botón para aumentar cantidade
+                            IconButton(
+                              onPressed: () => setState(() => _cantidade++),
+                              icon: const Icon(Icons.add_circle_outline),
+                              iconSize: 32,
+                              color: Colors.blue,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
                         // Botón para engadir ao carrito
                         ElevatedButton.icon(
                           onPressed: engadirAoCarrito,
@@ -130,10 +158,7 @@ class _PantallaProdutoState extends State<PantallaProduto> {
                           label: const Text('Engadir ao carrito'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                           ),
                         ),
                       ],
