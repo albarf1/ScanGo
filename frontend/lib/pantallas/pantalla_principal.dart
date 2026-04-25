@@ -35,7 +35,12 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     _pantallas = [
       _construirPantallaInicio(),
       PantallaEscaner(usuarioId: widget.usuarioId),
-      PantallaCarrito(usuarioId: widget.usuarioId),
+      PantallaCarrito(
+        usuarioId: widget.usuarioId,
+        nomeUsuario: widget.nomeUsuario,
+        eAdmin: widget.eAdmin,
+        onSeguirComprando: () => setState(() => _indiceActual = 1),
+      ),
       if (widget.eAdmin) const PantallaAdmin(),
       _construirPantallaPeril(),
     ];
