@@ -1,4 +1,4 @@
-# Base de datos 
+# Base de datos
 sqlalchemy
 
 # Framework web para crear APIs REST
@@ -6,3 +6,6 @@ fastapi
 
 # Servidor para executar a aplicación FastAPI
 uvicorn
+
+# Xestión de tokens JWT
+python-jose[cryptography]
