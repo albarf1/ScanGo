@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.database import get_db
 from app import models
+from app.auth_jwt import crear_token
 import hashlib
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
@@ -21,7 +22,7 @@ class DatosLogin(BaseModel):
     contrasinal: str
 
 
-# Información do usuario que se devolve tras o rexistro ou login
+# Información do usuario que se devolve tras o rexistro
 class RespostaUsuario(BaseModel):
     id: int
     nome: str
@@ -30,6 +31,13 @@ class RespostaUsuario(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Resposta do login: inclúe o token JWT e os datos do usuario
+class RespostaLogin(BaseModel):
+    access_token: str
+    token_type: str
+    usuario: RespostaUsuario
 
 
 # Xera o hash SHA-256 do contrasinal para gardalo de forma segura
@@ -75,8 +83,8 @@ def rexistrarse(datos: DatosRexistro, db: Session = Depends(get_db)):
     return novo_usuario
 
 
-# Inicia sesión comprobando o correo e o contrasinal hasheado
-@router.post("/login", response_model=RespostaUsuario)
+# Inicia sesión comprobando o correo e o contrasinal hasheado, e devolve un token JWT
+@router.post("/login", response_model=RespostaLogin)
 def iniciar_sesion(datos: DatosLogin, db: Session = Depends(get_db)):
     # Buscamos o usuario polo correo
     usuario = db.query(models.Usuario).filter(
@@ -87,4 +95,11 @@ def iniciar_sesion(datos: DatosLogin, db: Session = Depends(get_db)):
     if not usuario or usuario.contrasinal != _hash_contrasinal(datos.contrasinal):
         raise HTTPException(status_code=401, detail="Correo ou contrasinal incorrectos")
 
-    return usuario
+    # Xeramos o token JWT co ID e email do usuario
+    token = crear_token(usuario.id, usuario.email)
+
+    return RespostaLogin(
+        access_token=token,
+        token_type="bearer",
+        usuario=RespostaUsuario.model_validate(usuario),
+    )
