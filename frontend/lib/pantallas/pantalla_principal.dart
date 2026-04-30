@@ -3,6 +3,7 @@ import 'pantalla_escaner.dart';
 import 'pantalla_carrito.dart';
 import 'pantalla_login.dart';
 import 'pantalla_admin.dart';
+import '../servizos/api_servizo.dart';
 
 /// Widget principal que xestiona a navegación entre pantallas
 class PantallaPrincipal extends StatefulWidget {
@@ -146,6 +147,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
+              // Eliminamos o token ao pechar sesión
+              ApiServizo.borrarToken();
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const PantallaLogin()),
                 (route) => false,
