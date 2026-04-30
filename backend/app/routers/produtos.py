@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.database import get_db
 from app import models
+from app.auth_jwt import get_admin_user
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
 
@@ -30,9 +31,9 @@ class DatosProduto(BaseModel):
         from_attributes = True
 
 
-# Crea un novo produto no catálogo, comprobando que o código QR non estea repetido
+# Crea un novo produto no catálogo, só accesible para administradores autenticados
 @router.post("/", response_model=DatosProduto, status_code=201)
-def crear_produto(datos: PeticionProduto, db: Session = Depends(get_db)):
+def crear_produto(datos: PeticionProduto, db: Session = Depends(get_db), _=Depends(get_admin_user)):
     # Validamos que o prezo sexa maior que cero
     if datos.prezo <= 0:
         raise HTTPException(status_code=422, detail="O prezo debe ser maior que cero")
