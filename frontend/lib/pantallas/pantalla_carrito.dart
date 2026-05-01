@@ -83,9 +83,45 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
     }
   }
 
+  /// Devolve true se o carrito ten produtos
+  bool get _tenItems =>
+      carrito != null && (carrito!['lineas'] as List).isNotEmpty;
+
+  /// Mostra diálogo de confirmación antes de saír co carriño con produtos
+  Future<bool> _confirmarSaida() async {
+    if (!_tenItems) return true;
+    final sair = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Saír do carrito'),
+        content: const Text('Tes produtos no carrito. Se saes perderás a selección actual.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Quedarme'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Saír', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    return sair ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      // Bloqueamos o pop automático para xestionalo nós
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final podeSair = await _confirmarSaida();
+        if (podeSair && context.mounted) Navigator.of(context).pop();
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('O meu carrito'),
         backgroundColor: Colors.blue,
@@ -278,6 +314,7 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
                     ),
                   ],
                 ),
-    );
+      ),  // Scaffold
+    );  // PopScope
   }
 }
