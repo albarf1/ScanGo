@@ -164,6 +164,45 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     );
   }
 
+  /// Cambia de tab comprobando se hai produtos no carriño antes de saír del
+  Future<void> _cambiarTab(int novoIndice) async {
+    // Índice da tab do carriño (sempre é 2)
+    const indiceCarrito = 2;
+
+    if (_indiceActual == indiceCarrito && novoIndice != indiceCarrito) {
+      // Consultamos se o carriño ten produtos
+      try {
+        final carritoData = await ApiServizo.verCarrito(widget.usuarioId);
+        final lineas = carritoData['lineas'] as List;
+        if (lineas.isNotEmpty && mounted) {
+          final sair = await showDialog<bool>(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('Saír do carriño'),
+              content: const Text('Tes produtos no carriño. Se saes perderás a selección actual.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Quedarme'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Saír', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          );
+          if (sair != true) return;
+        }
+      } catch (_) {
+        // Se non se pode consultar o carriño, permitimos o cambio
+      }
+    }
+
+    if (mounted) setState(() => _indiceActual = novoIndice);
+  }
+
   /// Xera os ítems da barra de navegación segundo o rol do usuario
   List<BottomNavigationBarItem> _itemsNavegacion() {
     return [
@@ -187,7 +226,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
       // Barra de navegación inferior con botóns dinámicos segundo o rol
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceActual,
-        onTap: (indice) => setState(() => _indiceActual = indice),
+        onTap: (indice) => _cambiarTab(indice),
         backgroundColor: Colors.white,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
