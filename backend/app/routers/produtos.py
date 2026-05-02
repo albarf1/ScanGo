@@ -18,6 +18,15 @@ class PeticionProduto(BaseModel):
     codigo_qr: str
 
 
+# Datos para editar un produto, todos os campos son opcionais
+class PeticionEditarProduto(BaseModel):
+    nome: Optional[str] = None
+    prezo: Optional[float] = None
+    descripcion: Optional[str] = None
+    stock: Optional[int] = None
+    codigo_qr: Optional[str] = None
+
+
 # Informacion do produto que se envia ao cliente
 class DatosProduto(BaseModel):
     id: int
@@ -94,3 +103,54 @@ def obter_produto(produto_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Produto non atopado")
 
     return produto
+
+
+# Edita os datos dun produto existente, só accesible para administradores
+@router.put("/{produto_id}", response_model=DatosProduto)
+def editar_produto(produto_id: int, datos: PeticionEditarProduto, db: Session = Depends(get_db), _=Depends(get_admin_user)):
+    produto = db.query(models.Producto).filter(
+        models.Producto.id == produto_id
+    ).first()
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto non atopado")
+
+    # Actualizamos só os campos que chegan na petición
+    if datos.nome is not None:
+        produto.nome = datos.nome.strip()
+    if datos.prezo is not None:
+        if datos.prezo <= 0:
+            raise HTTPException(status_code=422, detail="O prezo debe ser maior que cero")
+        produto.prezo = datos.prezo
+    if datos.stock is not None:
+        if datos.stock < 0:
+            raise HTTPException(status_code=422, detail="O stock non pode ser negativo")
+        produto.stock = datos.stock
+    if datos.descripcion is not None:
+        produto.descripcion = datos.descripcion
+    if datos.codigo_qr is not None:
+        # Comprobamos que o novo QR non estea en uso por outro produto
+        existente = db.query(models.Producto).filter(
+            models.Producto.codigo_qr == datos.codigo_qr,
+            models.Producto.id != produto_id
+        ).first()
+        if existente:
+            raise HTTPException(status_code=409, detail="O código QR xa está en uso")
+        produto.codigo_qr = datos.codigo_qr.strip()
+
+    db.commit()
+    db.refresh(produto)
+    return produto
+
+
+# Elimina un produto do catálogo, só accesible para administradores
+@router.delete("/{produto_id}", status_code=204)
+def eliminar_produto(produto_id: int, db: Session = Depends(get_db), _=Depends(get_admin_user)):
+    produto = db.query(models.Producto).filter(
+        models.Producto.id == produto_id
+    ).first()
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto non atopado")
+
+    db.delete(produto)
+    db.commit()
+    return None
