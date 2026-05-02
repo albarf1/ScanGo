@@ -222,6 +222,57 @@ class ApiServizo {
     }
   }
 
+  /// Edita un produto existente, chamada PUT a /produtos/{id} (só admin)
+  static Future<Map<String, dynamic>> editarProduto({
+    required int id,
+    required String nome,
+    required double prezo,
+    required int stock,
+    required String codigoQr,
+    String? descripcion,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/produtos/$id'),
+        headers: _authHeaders,
+        body: jsonEncode({
+          'nome': nome,
+          'prezo': prezo,
+          'stock': stock,
+          'codigo_qr': codigoQr,
+          'descripcion': descripcion,
+        }),
+      );
+      if (response.statusCode == 200) return jsonDecode(response.body);
+      if (response.statusCode == 409) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'O código QR xa está en uso');
+      }
+      if (response.statusCode == 422) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'Datos non válidos');
+      }
+      throw Exception('Error no servidor. Inténtao máis tarde.');
+    } on Exception {
+      rethrow;
+    } catch (_) {
+      throw Exception('Sen conexión co servidor');
+    }
+  }
+
+  /// Elimina un produto do catálogo, chamada DELETE a /produtos/{id} (só admin)
+  static Future<void> eliminarProduto(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/produtos/$id'),
+        headers: _authHeadersGet,
+      );
+      if (response.statusCode != 204) throw Exception('Error ao eliminar o produto');
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   /// Crea un novo produto no catálogo, chamada POST a /produtos/ (só admin)
   static Future<Map<String, dynamic>> crearProduto({
     required String nome,
