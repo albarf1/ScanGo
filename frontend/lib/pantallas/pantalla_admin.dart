@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../servizos/api_servizo.dart';
 import 'pantalla_crear_produto.dart';
+import 'pantalla_editar_produto.dart';
 
 /// Pantalla de administración: lista de produtos con opcións de xestión
 class PantallaAdmin extends StatefulWidget {
@@ -39,8 +40,56 @@ class _PantallaAdminState extends State<PantallaAdmin> {
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const PantallaCrearProduto()),
     );
-    // Recargamos por se se creou un produto novo
     _cargarProdutos();
+  }
+
+  /// Navega á pantalla de editar produto e recarga ao volver
+  Future<void> _irEditarProduto(Map<String, dynamic> produto) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => PantallaEditarProduto(produto: produto)),
+    );
+    _cargarProdutos();
+  }
+
+  /// Mostra diálogo de confirmación e elimina o produto
+  Future<void> _confirmarEliminar(Map<String, dynamic> produto) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar produto'),
+        content: Text('¿Seguro que queres eliminar "${produto['nome']}"? Esta acción non se pode desfacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true) return;
+
+    try {
+      await ApiServizo.eliminarProduto(produto['id'] as int);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Produto eliminado correctamente'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      _cargarProdutos();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   @override
@@ -58,10 +107,8 @@ class _PantallaAdminState extends State<PantallaAdmin> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Mensaxe de erro
                       Text(_erroMensaxe!, style: const TextStyle(color: Colors.red)),
                       const SizedBox(height: 12),
-                      // Botón para reintentar
                       ElevatedButton(
                         onPressed: _cargarProdutos,
                         child: const Text('Reintentar'),
@@ -78,23 +125,35 @@ class _PantallaAdminState extends State<PantallaAdmin> {
                       itemBuilder: (_, i) {
                         final p = _produtos[i];
                         return ListTile(
-                          // Icono do produto
                           leading: const Icon(Icons.inventory_2, color: Colors.blue),
-                          // Nome e código QR
                           title: Text(p['nome'] ?? ''),
                           subtitle: Text('QR: ${p['codigo_qr']}  ·  Stock: ${p['stock']}'),
-                          // Prezo á dereita
-                          trailing: Text(
-                            '${(p['prezo'] as num).toStringAsFixed(2)} €',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Prezo
+                              Text(
+                                '${(p['prezo'] as num).toStringAsFixed(2)} €',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              const SizedBox(width: 8),
+                              // Botón editar
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                                tooltip: 'Editar',
+                                onPressed: () => _irEditarProduto(Map<String, dynamic>.from(p)),
+                              ),
+                              // Botón eliminar
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                tooltip: 'Eliminar',
+                                onPressed: () => _confirmarEliminar(p),
+                              ),
+                            ],
                           ),
                         );
                       },
                     ),
-      // Botón flotante para crear un novo produto
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _irCrearProduto,
         backgroundColor: Colors.blue,
