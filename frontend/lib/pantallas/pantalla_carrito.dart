@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../servizos/api_servizo.dart';
+import '../widgets/tarxeta_linea_carrito.dart';
 import 'pantalla_pago.dart';
 
 /// Pantalla que mostra o carrito de compra do usuario
@@ -183,97 +184,19 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
                         itemCount: carrito!['lineas'].length,
                         itemBuilder: (context, index) {
                           final linea = carrito!['lineas'][index];
-                          final subtotal = linea['subtotal'] ?? 0;
                           final cantidad = linea['cantidad'] as int? ?? 1;
                           final codigoQr = linea['codigo_qr'] as String;
 
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      // Icono do produto
-                                      Container(
-                                        width: 50,
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue.shade100,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(Icons.shopping_bag, color: Colors.blue.shade400),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      // Nome e prezo unitario
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              linea['nome_produto'],
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            Text(
-                                              '${(linea['prezo_unitario'] as num).toStringAsFixed(2)} € / ud',
-                                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      // Subtotal
-                                      Text(
-                                        '${(subtotal as num).toStringAsFixed(2)} €',
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.blue),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Fila con botóns +/- e eliminar
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      // Botón eliminar
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                                        tooltip: 'Eliminar',
-                                        onPressed: () => _eliminarProduto(codigoQr),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      // Botón diminuír
-                                      IconButton(
-                                        icon: const Icon(Icons.remove_circle_outline, color: Colors.blue, size: 22),
-                                        onPressed: cantidad > 1
-                                            ? () => _actualizarCantidade(codigoQr, cantidad - 1)
-                                            : null,
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                      // Cantidade actual
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                                        child: Text(
-                                          '$cantidad',
-                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                      // Botón aumentar
-                                      IconButton(
-                                        icon: const Icon(Icons.add_circle_outline, color: Colors.blue, size: 22),
-                                        onPressed: () => _actualizarCantidade(codigoQr, cantidad + 1),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
+                          return TarxetaLineaCarrito(
+                            nomeProduto: linea['nome_produto'] as String,
+                            prezoUnitario: (linea['prezo_unitario'] as num).toDouble(),
+                            cantidad: cantidad,
+                            subtotal: (linea['subtotal'] as num).toDouble(),
+                            onEliminar: () => _eliminarProduto(codigoQr),
+                            onAumentar: () => _actualizarCantidade(codigoQr, cantidad + 1),
+                            onDiminuir: cantidad > 1
+                                ? () => _actualizarCantidade(codigoQr, cantidad - 1)
+                                : null,
                           );
                         },
                       ),

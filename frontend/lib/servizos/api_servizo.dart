@@ -5,7 +5,7 @@ import 'dart:convert';
 
 class ApiServizo {
   /// URL base do servidor backend
-  static const String baseUrl = 'http://127.0.0.1:8001';
+  static const String baseUrl = 'http://127.0.0.1:8000';
 
   /// Token JWT gardado tras o login, envíase en cada petición protexida
   static String? _token;
