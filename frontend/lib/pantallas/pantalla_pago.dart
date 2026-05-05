@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../servizos/api_servizo.dart';
 import '../widgets/boton_principal.dart';
 import '../widgets/contedor_erro.dart';
+import '../widgets/tarxeta_metodo_pago.dart';
 import 'pantalla_ticket.dart';
 
 /// Pantalla de selección de método de pago (funcionalidade futura)
@@ -104,44 +105,12 @@ class _PantallaPagoState extends State<PantallaPago> {
             // Lista de métodos de pago
             ...List.generate(_metodos.length, (i) {
               final metodo = _metodos[i];
-              return GestureDetector(
+              return TarxetaMetodoPago(
+                icono: metodo['icono'] as IconData,
+                titulo: metodo['titulo'] as String,
+                subtitulo: metodo['subtitulo'] as String,
+                seleccionado: _metodoSeleccionado == i,
                 onTap: () => setState(() => _metodoSeleccionado = i),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: _metodoSeleccionado == i ? Colors.blue : Colors.grey.shade300,
-                      width: _metodoSeleccionado == i ? 2 : 1,
-                    ),
-                    color: _metodoSeleccionado == i ? Colors.blue.shade50 : Colors.white,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(metodo['icono'] as IconData,
-                          color: _metodoSeleccionado == i ? Colors.blue : Colors.grey),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(metodo['titulo'] as String,
-                                style: const TextStyle(fontWeight: FontWeight.w600)),
-                            Text(metodo['subtitulo'] as String,
-                                style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                          ],
-                        ),
-                      ),
-                      Icon(
-                        _metodoSeleccionado == i
-                            ? Icons.radio_button_checked
-                            : Icons.radio_button_unchecked,
-                        color: _metodoSeleccionado == i ? Colors.blue : Colors.grey,
-                      ),
-                    ],
-                  ),
-                ),
               );
             }),
 
