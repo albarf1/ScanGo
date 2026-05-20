@@ -81,6 +81,15 @@ def engadir_produto(datos: PeticionEngadir, db: Session = Depends(get_db), _=Dep
         models.LineaCarrito.producto_id == produto.id
     ).first()
 
+    # Comprobamos que hai stock suficiente tendo en conta o que xa está no carrito
+    cantidad_en_carrito = linea.cantidad if linea else 0
+    if cantidad_en_carrito + datos.cantidad > produto.stock:
+        dispoñible = produto.stock - cantidad_en_carrito
+        raise HTTPException(
+            status_code=400,
+            detail=f"Stock insuficiente. Só quedan {dispoñible} unidades dispoñibles de {produto.nome}"
+        )
+
     if linea:
         linea.cantidad += datos.cantidad
     else:
@@ -214,8 +223,10 @@ def finalizar_compra(usuario_id: int, db: Session = Depends(get_db), _=Depends(g
     )
     db.add(compra)
 
-    # Marcamos o carrito como inactivo
+    # Marcamos o carrito como inactivo e descontamos o stock de cada produto
     carrito.activo = False
+    for l in carrito.lineas:
+        l.producto.stock -= l.cantidad
     db.commit()
     db.refresh(compra)
 
