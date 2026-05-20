@@ -78,9 +78,16 @@ class ApiServizo {
           'cantidad': cantidad,
         }),
       );
-      if (response.statusCode != 201) throw Exception('Error ao engadir ao carrito');
-    } catch (e) {
-      throw Exception('Error: $e');
+      if (response.statusCode == 201) return;
+      if (response.statusCode == 400) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'Stock insuficiente');
+      }
+      throw Exception('Erro no servidor. Inténtao máis tarde.');
+    } on Exception {
+      rethrow;
+    } catch (_) {
+      throw Exception('Sen conexión co servidor');
     }
   }
 
