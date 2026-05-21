@@ -36,7 +36,7 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
   Future<void> cargarCarrito() async {
     setState(() => cargando = true);
     try {
-      final datos = await ApiServizo.verCarrito(widget.usuarioId);
+      final datos = await ApiServizo.verCarrito();
       setState(() { carrito = datos; cargando = false; });
     } catch (e) {
       setState(() => cargando = false);
@@ -61,7 +61,7 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
   /// Elimina un produto do carrito e recarga os datos
   Future<void> _eliminarProduto(String codigoQr) async {
     try {
-      await ApiServizo.eliminarDoCarrito(widget.usuarioId, codigoQr);
+      await ApiServizo.eliminarDoCarrito(codigoQr);
       await cargarCarrito();
     } catch (e) {
       if (!mounted) return;
@@ -74,7 +74,7 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
   /// Actualiza a cantidade dun produto e recarga o carrito
   Future<void> _actualizarCantidade(String codigoQr, int novaCantidade) async {
     try {
-      await ApiServizo.actualizarCantidade(widget.usuarioId, codigoQr, novaCantidade);
+      await ApiServizo.actualizarCantidade(codigoQr, novaCantidade);
       await cargarCarrito();
     } catch (e) {
       if (!mounted) return;

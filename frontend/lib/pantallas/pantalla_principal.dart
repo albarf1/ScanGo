@@ -172,7 +172,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     if (_indiceActual == indiceCarrito && novoIndice != indiceCarrito) {
       // Consultamos se o carriño ten produtos
       try {
-        final carritoData = await ApiServizo.verCarrito(widget.usuarioId);
+        final carritoData = await ApiServizo.verCarrito();
         final lineas = carritoData['lineas'] as List;
         if (lineas.isNotEmpty && mounted) {
           final sair = await showDialog<bool>(

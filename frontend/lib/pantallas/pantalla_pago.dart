@@ -41,7 +41,7 @@ class _PantallaPagoState extends State<PantallaPago> {
   Future<void> _confirmarPago() async {
     setState(() { _cargando = true; _erroMensaxe = null; });
     try {
-      final ticket = await ApiServizo.finalizarCompra(widget.usuarioId);
+      final ticket = await ApiServizo.finalizarCompra();
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
