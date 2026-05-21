@@ -62,9 +62,8 @@ class ApiServizo {
     }
   }
 
-  /// Engade un producto ao carrito do usuario, chamada POST a /carrito/engadir
+  /// Engade un producto ao carrito do usuario autenticado, chamada POST a /carrito/engadir
   static Future<void> engadirAoCarrito(
-    int usuarioId,
     String codigoQr, {
     int cantidad = 1,
   }) async {
@@ -73,7 +72,6 @@ class ApiServizo {
         Uri.parse('$baseUrl/carrito/engadir'),
         headers: _authHeaders,
         body: jsonEncode({
-          'usuario_id': usuarioId,
           'codigo_qr': codigoQr,
           'cantidad': cantidad,
         }),
@@ -91,11 +89,11 @@ class ApiServizo {
     }
   }
 
-  /// Obtén o carrito activo do usuario, chamada GET a /carrito/ver/{usuarioId}
-  static Future<Map<String, dynamic>> verCarrito(int usuarioId) async {
+  /// Obtén o carrito activo do usuario autenticado, chamada GET a /carrito/ver
+  static Future<Map<String, dynamic>> verCarrito() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/carrito/ver/$usuarioId'),
+        Uri.parse('$baseUrl/carrito/ver'),
         headers: _authHeadersGet,
       );
       if (response.statusCode == 200) return jsonDecode(response.body);
@@ -167,11 +165,11 @@ class ApiServizo {
     }
   }
 
-  /// Finaliza a compra, chamada POST a /carrito/finalizar/{usuarioId}
-  static Future<Map<String, dynamic>> finalizarCompra(int usuarioId) async {
+  /// Finaliza a compra do usuario autenticado, chamada POST a /carrito/finalizar
+  static Future<Map<String, dynamic>> finalizarCompra() async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/carrito/finalizar/$usuarioId'),
+        Uri.parse('$baseUrl/carrito/finalizar'),
         headers: _authHeaders,
       );
       if (response.statusCode == 201) return jsonDecode(response.body);
@@ -191,11 +189,11 @@ class ApiServizo {
     }
   }
 
-  /// Actualiza a cantidade dun produto no carrito, chamada PUT a /carrito/actualizar
-  static Future<void> actualizarCantidade(int usuarioId, String codigoQr, int cantidad) async {
+  /// Actualiza a cantidade dun produto no carrito do usuario autenticado, chamada PUT a /carrito/actualizar/{codigoQr}
+  static Future<void> actualizarCantidade(String codigoQr, int cantidad) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/carrito/actualizar/$usuarioId/$codigoQr'),
+        Uri.parse('$baseUrl/carrito/actualizar/$codigoQr'),
         headers: _authHeaders,
         body: jsonEncode({'cantidad': cantidad}),
       );
@@ -205,11 +203,11 @@ class ApiServizo {
     }
   }
 
-  /// Elimina un produto do carrito, chamada DELETE a /carrito/eliminar
-  static Future<void> eliminarDoCarrito(int usuarioId, String codigoQr) async {
+  /// Elimina un produto do carrito do usuario autenticado, chamada DELETE a /carrito/eliminar/{codigoQr}
+  static Future<void> eliminarDoCarrito(String codigoQr) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/carrito/eliminar/$usuarioId/$codigoQr'),
+        Uri.parse('$baseUrl/carrito/eliminar/$codigoQr'),
         headers: _authHeadersGet,
       );
       if (response.statusCode != 200) throw Exception('Erro ao eliminar do carrito');

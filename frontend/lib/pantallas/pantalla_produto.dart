@@ -54,7 +54,6 @@ class _PantallaProdutoState extends State<PantallaProduto> {
   Future<void> engadirAoCarrito() async {
     try {
       await ApiServizo.engadirAoCarrito(
-        widget.usuarioId,
         widget.codigoQr,
         cantidad: _cantidade,
       );
