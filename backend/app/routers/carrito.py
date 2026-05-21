@@ -11,7 +11,6 @@ router = APIRouter(prefix="/carrito", tags=["Carrito"])
 
 # Datos que chegan cando o cliente quere engadir un produto
 class PeticionEngadir(BaseModel):
-    usuario_id: int
     codigo_qr: str
     cantidad: int = 1
 
@@ -53,9 +52,9 @@ class CarritoDetalle(BaseModel):
     total: float
 
 
-# Engade un produto ao carrito activo do usuario
+# Engade un produto ao carrito activo do usuario autenticado
 @router.post("/engadir", status_code=201)
-def engadir_produto(datos: PeticionEngadir, db: Session = Depends(get_db), _=Depends(get_current_user)):
+def engadir_produto(datos: PeticionEngadir, db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
     # Buscamos o produto polo codigo QR
     produto = db.query(models.Producto).filter(
         models.Producto.codigo_qr == datos.codigo_qr
@@ -65,12 +64,12 @@ def engadir_produto(datos: PeticionEngadir, db: Session = Depends(get_db), _=Dep
 
     # Buscamos o carrito activo do usuario ou creamos un novo
     carrito = db.query(models.Carrito).filter(
-        models.Carrito.usuario_id == datos.usuario_id,
+        models.Carrito.usuario_id == usuario_actual.id,
         models.Carrito.activo == True
     ).first()
 
     if not carrito:
-        carrito = models.Carrito(usuario_id=datos.usuario_id)
+        carrito = models.Carrito(usuario_id=usuario_actual.id)
         db.add(carrito)
         db.commit()
         db.refresh(carrito)
@@ -105,11 +104,11 @@ def engadir_produto(datos: PeticionEngadir, db: Session = Depends(get_db), _=Dep
     return {"mensaxe": f"{produto.nome} engadido ao carrito "}
 
 
-# Devolve o carrito activo do usuario co total calculado
-@router.get("/ver/{usuario_id}", response_model=CarritoDetalle)
-def ver_carrito(usuario_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
+# Devolve o carrito activo do usuario autenticado co total calculado
+@router.get("/ver", response_model=CarritoDetalle)
+def ver_carrito(db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
     carrito = db.query(models.Carrito).filter(
-        models.Carrito.usuario_id == usuario_id,
+        models.Carrito.usuario_id == usuario_actual.id,
         models.Carrito.activo == True
     ).first()
 
@@ -134,11 +133,11 @@ def ver_carrito(usuario_id: int, db: Session = Depends(get_db), _=Depends(get_cu
     return CarritoDetalle(id=carrito.id, lineas=lineas, total=total)
 
 
-# Elimina un produto do carrito
-@router.delete("/eliminar/{usuario_id}/{codigo_qr}")
-def eliminar_produto(usuario_id: int, codigo_qr: str, db: Session = Depends(get_db), _=Depends(get_current_user)):
+# Elimina un produto do carrito do usuario autenticado
+@router.delete("/eliminar/{codigo_qr}")
+def eliminar_produto(codigo_qr: str, db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
     carrito = db.query(models.Carrito).filter(
-        models.Carrito.usuario_id == usuario_id,
+        models.Carrito.usuario_id == usuario_actual.id,
         models.Carrito.activo == True
     ).first()
 
@@ -166,14 +165,14 @@ def eliminar_produto(usuario_id: int, codigo_qr: str, db: Session = Depends(get_
     return {"mensaxe": f"{produto.nome} eliminado do carrito "}
 
 
-# Actualiza a cantidade dun produto no carrito
-@router.put("/actualizar/{usuario_id}/{codigo_qr}")
-def actualizar_cantidad(usuario_id: int, codigo_qr: str, datos: PeticionActualizar, db: Session = Depends(get_db), _=Depends(get_current_user)):
+# Actualiza a cantidade dun produto no carrito do usuario autenticado
+@router.put("/actualizar/{codigo_qr}")
+def actualizar_cantidad(codigo_qr: str, datos: PeticionActualizar, db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
     if datos.cantidad < 1:
         raise HTTPException(status_code=400, detail="A cantidade debe ser maior que cero")
 
     carrito = db.query(models.Carrito).filter(
-        models.Carrito.usuario_id == usuario_id,
+        models.Carrito.usuario_id == usuario_actual.id,
         models.Carrito.activo == True
     ).first()
     if not carrito:
@@ -197,12 +196,12 @@ def actualizar_cantidad(usuario_id: int, codigo_qr: str, datos: PeticionActualiz
     return {"mensaxe": f"Cantidade actualizada a {datos.cantidad}"}
 
 
-# Finaliza a compra: garda o rexistro, marca o carrito como inactivo e devolve o ticket
-@router.post("/finalizar/{usuario_id}", response_model=RespostaCompra, status_code=201)
-def finalizar_compra(usuario_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
+# Finaliza a compra do usuario autenticado: garda o rexistro, marca o carrito como inactivo e devolve o ticket
+@router.post("/finalizar", response_model=RespostaCompra, status_code=201)
+def finalizar_compra(db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
     # Buscamos o carrito activo do usuario
     carrito = db.query(models.Carrito).filter(
-        models.Carrito.usuario_id == usuario_id,
+        models.Carrito.usuario_id == usuario_actual.id,
         models.Carrito.activo == True
     ).first()
 
@@ -217,7 +216,7 @@ def finalizar_compra(usuario_id: int, db: Session = Depends(get_db), _=Depends(g
 
     # Gardamos o rexistro da compra
     compra = models.Compra(
-        usuario_id=usuario_id,
+        usuario_id=usuario_actual.id,
         carrito_id=carrito.id,
         total=total,
     )
