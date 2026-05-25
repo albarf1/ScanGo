@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -48,7 +48,7 @@ class Carrito(Base):
     id = Column(Integer, primary_key=True, index=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     activo = Column(Boolean, default=True)
-    creado_en = Column(DateTime, default=datetime.utcnow)
+    creado_en = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     usuario = relationship("Usuario", back_populates="carritos")
     lineas = relationship("LineaCarrito", back_populates="carrito")
@@ -65,7 +65,7 @@ class Compra(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     carrito_id = Column(Integer, ForeignKey("carritos.id"))
     total = Column(Float)
-    data = Column(DateTime, default=datetime.utcnow)
+    data = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     usuario = relationship("Usuario")
     carrito = relationship("Carrito")

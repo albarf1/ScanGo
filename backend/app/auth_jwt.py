@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -18,7 +18,7 @@ _bearer = HTTPBearer()
 
 # Xera un token JWT co ID e email do usuario
 def crear_token(usuario_id: int, email: str) -> str:
-    expiracion = datetime.utcnow() + timedelta(hours=EXPIRACION_HORAS)
+    expiracion = datetime.now(timezone.utc) + timedelta(hours=EXPIRACION_HORAS)
     datos = {"sub": str(usuario_id), "email": email, "exp": expiracion}
     return jwt.encode(datos, SECRET_KEY, algorithm=ALGORITHM)
 
