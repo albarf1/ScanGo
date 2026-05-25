@@ -23,8 +23,14 @@ Script para cargar datos de proba
 
 """
 
+import hashlib
 from app.database import SessionLocal
 from app.models import Usuario, Producto, Carrito, LineaCarrito
+
+
+def _hash_contrasinal(contrasinal: str) -> str:
+    """Xera o hash SHA-256 do contrasinal, igual que fai auth.py"""
+    return hashlib.sha256(contrasinal.encode()).hexdigest()
 
 
 def cargar_datos():
@@ -34,8 +40,8 @@ def cargar_datos():
 
     # Crear usuarios de proba
     print("Creando usuarios...")
-    usuario1 = Usuario(id=1, nome="Alba Rodríguez", email="alba@scango.com")
-    usuario2 = Usuario(id=2, nome="Jacobo Martinez", email="jacobo@scango.com")
+    usuario1 = Usuario(id=1, nome="Alba Rodríguez", email="alba@scango.com", contrasinal=_hash_contrasinal("password123"))
+    usuario2 = Usuario(id=2, nome="Jacobo Martinez", email="jacobo@scango.com", contrasinal=_hash_contrasinal("password123"))
     
     db.add(usuario1)
     db.add(usuario2)
