@@ -191,6 +191,13 @@ def actualizar_cantidad(codigo_qr: str, datos: PeticionActualizar, db: Session =
     if not linea:
         raise HTTPException(status_code=404, detail="O produto non está no carrito")
 
+    # Comprobamos que a nova cantidade non supera o stock dispoñible
+    if datos.cantidad > produto.stock:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Stock insuficiente. Só quedan {produto.stock} unidades dispoñibles de {produto.nome}"
+        )
+
     linea.cantidad = datos.cantidad
     db.commit()
     return {"mensaxe": f"Cantidade actualizada a {datos.cantidad}"}

@@ -197,9 +197,16 @@ class ApiServizo {
         headers: _authHeaders,
         body: jsonEncode({'cantidad': cantidad}),
       );
-      if (response.statusCode != 200) throw Exception('Erro ao actualizar cantidade');
-    } catch (e) {
-      throw Exception('Error: $e');
+      if (response.statusCode == 200) return;
+      if (response.statusCode == 400) {
+        final corpo = jsonDecode(response.body);
+        throw Exception(corpo['detail'] ?? 'Stock insuficiente');
+      }
+      throw Exception('Erro ao actualizar cantidade');
+    } on Exception {
+      rethrow;
+    } catch (_) {
+      throw Exception('Sen conexión co servidor');
     }
   }
 
