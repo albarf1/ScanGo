@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 /// Cabeceira común con logo QR, título e subtítulo
 class LogoCabeceira extends StatelessWidget {
   final String subtitulo;
+  final bool mostrarTitulo;
 
-  const LogoCabeceira({super.key, required this.subtitulo});
+  const LogoCabeceira({
+    super.key,
+    required this.subtitulo,
+    this.mostrarTitulo = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,17 +18,19 @@ class LogoCabeceira extends StatelessWidget {
         // Logo QR
         Icon(Icons.qr_code_2, size: 80, color: Colors.blue[600]),
         const SizedBox(height: 20),
-        // Título
-        const Text(
-          'ScanGo',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
+        // Título (opcional)
+        if (mostrarTitulo) ...[
+          const Text(
+            'ScanGo',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        // Subtítulo 
+          const SizedBox(height: 10),
+        ],
+        // Subtítulo
         Text(
           subtitulo,
           style: const TextStyle(fontSize: 14, color: Colors.grey),

@@ -45,7 +45,7 @@ class _PantallaEscanerState extends State<PantallaEscaner> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Escanear QR'),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.blue,
         elevation: 0,
       ),
       body: Column(
@@ -54,6 +54,9 @@ class _PantallaEscanerState extends State<PantallaEscaner> {
           Expanded(
             child: Stack(
               children: [
+                // Fondo branco
+                Container(color: Colors.white),
+
                 // Librería mobile_scanner para captar códigos de barras
                 MobileScanner(
                   onDetect: (captura) {
@@ -79,13 +82,13 @@ class _PantallaEscanerState extends State<PantallaEscaner> {
                 ),
 
                 // Texto instructivo na parte inferior do visor
-                const Align(
+                Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
                       'Apunta ao código QR do produto',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
+                      style: TextStyle(color: Colors.grey[700], fontSize: 14),
                     ),
                   ),
                 ),
