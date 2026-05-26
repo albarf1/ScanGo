@@ -50,11 +50,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   /// Constrúe a pantalla de inicio cunha bolsa como icono e mensaxe de benvida
   Widget _construirPantallaInicio() {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ScanGo'),
-        backgroundColor: Colors.blue,
-        centerTitle: true,
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -81,11 +76,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   /// Constrúe a pantalla de perfil co nome real do usuario e botón de pechar sesión
   Widget _construirPantallaPeril() {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Perfil'),
-        backgroundColor: Colors.blue,
-        centerTitle: true,
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

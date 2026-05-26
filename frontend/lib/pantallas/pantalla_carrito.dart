@@ -123,10 +123,6 @@ class _PantallaCarritoState extends State<PantallaCarrito> {
         if (podeSair && context.mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: const Text('O meu carrito'),
-        backgroundColor: Colors.blue,
-      ),
       body: cargando
           ? const Center(child: CircularProgressIndicator())
           : carrito == null || (carrito!['lineas'] as List).isEmpty

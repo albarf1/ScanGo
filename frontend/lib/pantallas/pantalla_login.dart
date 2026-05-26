@@ -63,11 +63,6 @@ class _PantallaLoginState extends State<PantallaLogin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ScanGo - Entrar'),
-        backgroundColor: Colors.blue,
-        centerTitle: true,
-      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -76,7 +71,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const LogoCabeceira(subtitulo: 'Inicia sesión para continuar'),
+                const LogoCabeceira(subtitulo: 'Inicia sesión para continuar', mostrarTitulo: false),
                 CampoCorreo(controller: _correoController),
                 const SizedBox(height: 16),
                 CampoContrasinal(
