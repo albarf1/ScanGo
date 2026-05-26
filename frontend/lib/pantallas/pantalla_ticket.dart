@@ -30,96 +30,103 @@ class PantallaTicket extends StatelessWidget {
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // Icono de confirmación
-            const Icon(Icons.check_circle, color: Colors.green, size: 80),
-            const SizedBox(height: 12),
-            const Text(
-              'Grazas pola túa compra!',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Nº $compraId  ·  $data',
-              style: const TextStyle(fontSize: 13, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-
-            // Ticket con liñas de produtos
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(8),
-              ),
+      body: Column(
+        children: [
+          // Contido do ticket con scroll
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  // Cabeceira do ticket
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Expanded(child: Text('Produto', style: TextStyle(fontWeight: FontWeight.bold))),
-                        Text('Cant.', style: TextStyle(fontWeight: FontWeight.bold)),
-                        SizedBox(width: 16),
-                        SizedBox(
-                          width: 70,
-                          child: Text('Subtotal', textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
+                  // Icono de confirmación
+                  const Icon(Icons.check_circle, color: Colors.green, size: 80),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Grazas pola túa compra!',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  // Liñas de cada produto
-                  ...lineas.map((l) {
-                    final subtotal = (l['subtotal'] as num).toStringAsFixed(2);
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 4),
+                  Text(
+                    'Nº $compraId  ·  $data',
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Ticket con liñas de produtos
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      children: [
+                        // Cabeceira do ticket
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Expanded(child: Text('Produto', style: TextStyle(fontWeight: FontWeight.bold))),
+                              Text('Cant.', style: TextStyle(fontWeight: FontWeight.bold)),
+                              SizedBox(width: 16),
+                              SizedBox(
+                                width: 70,
+                                child: Text('Subtotal', textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Liñas de cada produto
+                        ...lineas.map((l) {
+                          final subtotal = (l['subtotal'] as num).toStringAsFixed(2);
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            child: Row(
                               children: [
-                                Text(l['nome_produto'], style: const TextStyle(fontWeight: FontWeight.w500)),
-                                Text(
-                                  '${(l['prezo_unitario'] as num).toStringAsFixed(2)} € / ud',
-                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(l['nome_produto'], style: const TextStyle(fontWeight: FontWeight.w500)),
+                                      Text(
+                                        '${(l['prezo_unitario'] as num).toStringAsFixed(2)} € / ud',
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text('x${l['cantidad']}'),
+                                const SizedBox(width: 16),
+                                SizedBox(
+                                  width: 70,
+                                  child: Text(
+                                    '$subtotal €',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ],
                             ),
+                          );
+                        }),
+                        // Liña divisoria
+                        Divider(color: Colors.grey.shade300, height: 1),
+                        // Total
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('TOTAL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text(
+                                '$total €',
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                              ),
+                            ],
                           ),
-                          Text('x${l['cantidad']}'),
-                          const SizedBox(width: 16),
-                          SizedBox(
-                            width: 70,
-                            child: Text(
-                              '$subtotal €',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                  // Liña divisoria
-                  Divider(color: Colors.grey.shade300, height: 1),
-                  // Total
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('TOTAL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        Text(
-                          '$total €',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
                         ),
                       ],
                     ),
@@ -127,10 +134,12 @@ class PantallaTicket extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+          ),
 
-            // Botón para volver á app sen pechar sesión
-            SizedBox(
+          // Botón fixo na parte inferior
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
@@ -151,8 +160,8 @@ class PantallaTicket extends StatelessWidget {
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

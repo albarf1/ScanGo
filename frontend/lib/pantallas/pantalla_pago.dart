@@ -128,15 +128,6 @@ class _PantallaPagoState extends State<PantallaPago> {
               cargando: _cargando,
               onPressed: _confirmarPago,
             ),
-            const SizedBox(height: 12),
-
-            // Aviso de funcionalidade futura
-            const Center(
-              child: Text(
-                'Pasarela de pago real — funcionalidade futura',
-                style: TextStyle(fontSize: 11, color: Colors.grey),
-              ),
-            ),
           ],
         ),
       ),
