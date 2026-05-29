@@ -55,6 +55,14 @@ class CarritoDetalle(BaseModel):
 # Engade un produto ao carrito activo do usuario autenticado
 @router.post("/engadir", status_code=201)
 def engadir_produto(datos: PeticionEngadir, db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
+    """Engade un produto ao carrito do usuario ou incrementa a cantidade se xa existe.
+
+    Crea un carrito novo se o usuario non ten ningún activo.
+
+    Raises:
+        HTTPException 404: Se o produto non existe.
+        HTTPException 400: Se non hai stock suficiente.
+    """
     # Buscamos o produto polo codigo QR
     produto = db.query(models.Producto).filter(
         models.Producto.codigo_qr == datos.codigo_qr
@@ -107,6 +115,11 @@ def engadir_produto(datos: PeticionEngadir, db: Session = Depends(get_db), usuar
 # Devolve o carrito activo do usuario autenticado co total calculado
 @router.get("/ver", response_model=CarritoDetalle)
 def ver_carrito(db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
+    """Devolve o carrito activo co listado de produtos e o importe total.
+
+    Raises:
+        HTTPException 404: Se o usuario non ten ningún carrito activo.
+    """
     carrito = db.query(models.Carrito).filter(
         models.Carrito.usuario_id == usuario_actual.id,
         models.Carrito.activo == True
@@ -136,6 +149,11 @@ def ver_carrito(db: Session = Depends(get_db), usuario_actual: models.Usuario = 
 # Elimina un produto do carrito do usuario autenticado
 @router.delete("/eliminar/{codigo_qr}")
 def eliminar_produto(codigo_qr: str, db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
+    """Elimina a liña do produto indicado polo código QR do carrito activo.
+
+    Raises:
+        HTTPException 404: Se non hai carrito activo, o produto non existe ou non está no carrito.
+    """
     carrito = db.query(models.Carrito).filter(
         models.Carrito.usuario_id == usuario_actual.id,
         models.Carrito.activo == True
@@ -168,6 +186,12 @@ def eliminar_produto(codigo_qr: str, db: Session = Depends(get_db), usuario_actu
 # Actualiza a cantidade dun produto no carrito do usuario autenticado
 @router.put("/actualizar/{codigo_qr}")
 def actualizar_cantidad(codigo_qr: str, datos: PeticionActualizar, db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
+    """Cambia a cantidade dunha liña existente no carrito, validando o stock dispoñible.
+
+    Raises:
+        HTTPException 400: Se a cantidade é menor que 1 ou supera o stock.
+        HTTPException 404: Se non hai carrito activo, o produto non existe ou non está no carrito.
+    """
     if datos.cantidad < 1:
         raise HTTPException(status_code=400, detail="A cantidade debe ser maior que cero")
 
@@ -206,6 +230,12 @@ def actualizar_cantidad(codigo_qr: str, datos: PeticionActualizar, db: Session =
 # Finaliza a compra do usuario autenticado: garda o rexistro, marca o carrito como inactivo e devolve o ticket
 @router.post("/finalizar", response_model=RespostaCompra, status_code=201)
 def finalizar_compra(db: Session = Depends(get_db), usuario_actual: models.Usuario = Depends(get_current_user)):
+    """Garda a compra, desconta o stock de cada produto e devolve o ticket detallado.
+
+    Raises:
+        HTTPException 404: Se non hai carrito activo.
+        HTTPException 400: Se o carrito está baleiro.
+    """
     # Buscamos o carrito activo do usuario
     carrito = db.query(models.Carrito).filter(
         models.Carrito.usuario_id == usuario_actual.id,

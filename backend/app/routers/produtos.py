@@ -43,6 +43,12 @@ class DatosProduto(BaseModel):
 # Crea un novo produto no catálogo, só accesible para administradores autenticados
 @router.post("/", response_model=DatosProduto, status_code=201)
 def crear_produto(datos: PeticionProduto, db: Session = Depends(get_db), _=Depends(get_admin_user)):
+    """Crea un novo produto tras validar prezo, stock e unicidade do código QR.
+
+    Raises:
+        HTTPException 422: Se o prezo é cero ou negativo, ou o stock é negativo.
+        HTTPException 409: Se o código QR xa está en uso.
+    """
     # Validamos que o prezo sexa maior que cero
     if datos.prezo <= 0:
         raise HTTPException(status_code=422, detail="O prezo debe ser maior que cero")
@@ -75,6 +81,11 @@ def crear_produto(datos: PeticionProduto, db: Session = Depends(get_db), _=Depen
 # Busca un produto polo seu codigo QR, usase cando o cliente escanea
 @router.get("/escanear/{codigo_qr}", response_model=DatosProduto)
 def escanear_produto(codigo_qr: str, db: Session = Depends(get_db)):
+    """Devolve os datos do produto correspondente ao código QR escaneado.
+
+    Raises:
+        HTTPException 404: Se ningún produto ten ese código QR.
+    """
     produto = db.query(models.Producto).filter(
         models.Producto.codigo_qr == codigo_qr
     ).first()
@@ -88,6 +99,7 @@ def escanear_produto(codigo_qr: str, db: Session = Depends(get_db)):
 # Lista todos os produtos da base de datos
 @router.get("/", response_model=List[DatosProduto])
 def listar_produtos(db: Session = Depends(get_db)):
+    """Devolve a lista completa de produtos do catálogo."""
     produtos = db.query(models.Producto).all()
     return produtos
 
@@ -95,6 +107,11 @@ def listar_produtos(db: Session = Depends(get_db)):
 # Obtemos un produto polo seu identidicador, usase para obter os detalles dun produto concreto
 @router.get("/id/{produto_id}", response_model=DatosProduto)
 def obter_produto(produto_id: int, db: Session = Depends(get_db)):
+    """Devolve os datos dun produto polo seu identificador numérico.
+
+    Raises:
+        HTTPException 404: Se o produto non existe.
+    """
     produto = db.query(models.Producto).filter(
         models.Producto.id == produto_id
     ).first()
@@ -108,6 +125,13 @@ def obter_produto(produto_id: int, db: Session = Depends(get_db)):
 # Edita os datos dun produto existente, só accesible para administradores
 @router.put("/{produto_id}", response_model=DatosProduto)
 def editar_produto(produto_id: int, datos: PeticionEditarProduto, db: Session = Depends(get_db), _=Depends(get_admin_user)):
+    """Actualiza os campos recibidos dun produto. Os campos non enviados non se modifican.
+
+    Raises:
+        HTTPException 404: Se o produto non existe.
+        HTTPException 422: Se o prezo ou o stock non son válidos.
+        HTTPException 409: Se o novo código QR xa está en uso.
+    """
     produto = db.query(models.Producto).filter(
         models.Producto.id == produto_id
     ).first()
@@ -145,6 +169,11 @@ def editar_produto(produto_id: int, datos: PeticionEditarProduto, db: Session = 
 # Elimina un produto do catálogo, só accesible para administradores
 @router.delete("/{produto_id}", status_code=204)
 def eliminar_produto(produto_id: int, db: Session = Depends(get_db), _=Depends(get_admin_user)):
+    """Borra permanentemente un produto do catálogo.
+
+    Raises:
+        HTTPException 404: Se o produto non existe.
+    """
     produto = db.query(models.Producto).filter(
         models.Producto.id == produto_id
     ).first()

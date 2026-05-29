@@ -42,12 +42,19 @@ class RespostaLogin(BaseModel):
 
 # Xera o hash SHA-256 do contrasinal para gardalo de forma segura
 def _hash_contrasinal(contrasinal: str) -> str:
+    """Devolve o hash SHA-256 do contrasinal recibido en texto plano."""
     return hashlib.sha256(contrasinal.encode()).hexdigest()
 
 
 # Rexistra un novo usuario validando os datos e comprobando que o correo non estea en uso
 @router.post("/register", response_model=RespostaUsuario, status_code=201)
 def rexistrarse(datos: DatosRexistro, db: Session = Depends(get_db)):
+    """Crea un novo usuario na base de datos tras validar nome, correo e contrasinal.
+
+    Raises:
+        HTTPException 422: Se o nome é demasiado curto, o correo é inválido ou o contrasinal ten menos de 8 caracteres.
+        HTTPException 409: Se o correo xa está rexistrado.
+    """
     # Validamos que o nome teña polo menos 2 caracteres
     if not datos.nome.strip() or len(datos.nome.strip()) < 2:
         raise HTTPException(status_code=422, detail="O nome debe ter polo menos 2 caracteres")
@@ -86,6 +93,11 @@ def rexistrarse(datos: DatosRexistro, db: Session = Depends(get_db)):
 # Inicia sesión comprobando o correo e o contrasinal hasheado, e devolve un token JWT
 @router.post("/login", response_model=RespostaLogin)
 def iniciar_sesion(datos: DatosLogin, db: Session = Depends(get_db)):
+    """Autentica o usuario e devolve un token JWT xunto cos seus datos básicos.
+
+    Raises:
+        HTTPException 401: Se o correo non existe ou o contrasinal non coincide.
+    """
     # Buscamos o usuario polo correo
     usuario = db.query(models.Usuario).filter(
         models.Usuario.email == datos.email.lower()

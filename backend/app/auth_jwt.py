@@ -18,6 +18,7 @@ _bearer = HTTPBearer()
 
 # Xera un token JWT co ID e email do usuario
 def crear_token(usuario_id: int, email: str) -> str:
+    """Xera e devolve un token JWT asinado con expiración de 24 horas."""
     expiracion = datetime.now(timezone.utc) + timedelta(hours=EXPIRACION_HORAS)
     datos = {"sub": str(usuario_id), "email": email, "exp": expiracion}
     return jwt.encode(datos, SECRET_KEY, algorithm=ALGORITHM)
@@ -28,6 +29,11 @@ def get_current_user(
     credenciais: HTTPAuthorizationCredentials = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> models.Usuario:
+    """Valida o token Bearer da cabeceira e devolve o usuario correspondente da BD.
+
+    Raises:
+        HTTPException 401: Se o token é inválido, está expirado ou o usuario non existe.
+    """
     erro_credenciais = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Token non válido ou expirado",
@@ -52,6 +58,7 @@ def get_current_user(
 
 # Dependencia que ademais verifica que o usuario é administrador
 def get_admin_user(usuario: models.Usuario = Depends(get_current_user)) -> models.Usuario:
+    """Reutiliza get_current_user e lanza 403 se o usuario non é administrador."""
     if not usuario.e_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

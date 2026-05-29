@@ -19,6 +19,11 @@ class DatoUsuario(BaseModel):
 # Aqui obtemos a información dun usuario polo seu ID
 @router.get("/{usuario_id}", response_model=DatoUsuario)
 def obter_usuario(usuario_id: int, db: Session = Depends(get_db)):
+    """Devolve os datos públicos dun usuario polo seu identificador numérico.
+
+    Raises:
+        HTTPException 404: Se o usuario non existe.
+    """
     usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
     
     if not usuario:
