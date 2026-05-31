@@ -1,3 +1,4 @@
+import re
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -100,7 +101,6 @@ def escanear_produto(codigo_qr: str, db: Session = Depends(get_db)):
 @router.get("/siguiente-qr")
 def siguiente_qr(db: Session = Depends(get_db)):
     """Calcula e devolve o seguinte código QR libre no formato QR001, QR002..."""
-    import re
     produtos = db.query(models.Producto).all()
     # Extraemos os números dos QR que siguen o patrón QRxxx
     numeros = []
