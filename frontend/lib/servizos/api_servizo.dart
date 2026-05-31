@@ -234,6 +234,22 @@ class ApiServizo {
     }
   }
 
+  /// Obtén o seguinte código QR dispoñible, chamada GET a /produtos/siguiente-qr
+  static Future<String> siguienteQr() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/produtos/siguiente-qr'),
+        headers: _authHeadersGet,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body)['codigo_qr'] as String;
+      }
+      throw Exception('Erro ao obter o seguinte QR');
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   /// Edita un produto existente, chamada PUT a /produtos/{id} (só admin)
   static Future<Map<String, dynamic>> editarProduto({
     required int id,

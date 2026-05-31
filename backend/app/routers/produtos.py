@@ -96,6 +96,22 @@ def escanear_produto(codigo_qr: str, db: Session = Depends(get_db)):
     return produto
 
 
+# Devolve o seguinte código QR dispoñible seguindo o patrón QRxxx
+@router.get("/siguiente-qr")
+def siguiente_qr(db: Session = Depends(get_db)):
+    """Calcula e devolve o seguinte código QR libre no formato QR001, QR002..."""
+    import re
+    produtos = db.query(models.Producto).all()
+    # Extraemos os números dos QR que siguen o patrón QRxxx
+    numeros = []
+    for p in produtos:
+        match = re.fullmatch(r"QR(\d+)", p.codigo_qr)
+        if match:
+            numeros.append(int(match.group(1)))
+    seguinte = (max(numeros) + 1) if numeros else 1
+    return {"codigo_qr": f"QR{seguinte:03d}"}
+
+
 # Lista todos os produtos da base de datos
 @router.get("/", response_model=List[DatosProduto])
 def listar_produtos(db: Session = Depends(get_db)):
