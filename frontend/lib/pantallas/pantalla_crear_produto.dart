@@ -23,6 +23,20 @@ class _PantallaCrearProdutoState extends State<PantallaCrearProduto> {
   String? _erroMensaxe;
 
   @override
+  void initState() {
+    super.initState();
+    _preencherQrAutomatico();
+  }
+
+  /// Obtén o seguinte QR dispoñible e pre-enche o campo
+  Future<void> _preencherQrAutomatico() async {
+    try {
+      final qr = await ApiServizo.siguienteQr();
+      if (mounted) _codigoQrController.text = qr;
+    } catch (_) {}
+  }
+
+  @override
   void dispose() {
     _nomeController.dispose();
     _prezoController.dispose();
@@ -48,9 +62,22 @@ class _PantallaCrearProdutoState extends State<PantallaCrearProduto> {
             : _descripcionController.text.trim(),
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produto creado correctamente'), backgroundColor: Colors.green),
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
+          title: const Text('Produto creado'),
+          content: const Text('O produto foi engadido ao catálogo correctamente.'),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Aceptar', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
       );
+      if (!mounted) return;
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
